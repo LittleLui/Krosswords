@@ -82,8 +82,12 @@ Senkrecht:
                 try {
                 		Container c = ctx.getRootContainer();
                 		c.setLayout(new BorderLayout());
-                        c.add(new CrosswordPanel(model, ctx), BorderLayout.CENTER);
-                        //ctx.getOnscreenKeyboardManager().setVisible(true);
+                		CrosswordPanel cp = new CrosswordPanel(model, ctx);
+                        c.add(cp, BorderLayout.CENTER);
+                        cp.requestFocus();
+                        cp.requestFocusInWindow();
+                        ctx.getOnscreenKeyboardManager().setVisible(true);
+                        
                 } catch (Throwable t) {
                         t.printStackTrace();
                         throw new RuntimeException(t.getMessage(), t);

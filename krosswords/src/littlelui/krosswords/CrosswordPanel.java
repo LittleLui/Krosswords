@@ -28,15 +28,14 @@ import com.amazon.kindle.kindlet.event.GestureEvent;
 import com.amazon.kindle.kindlet.input.Gestures;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardManager;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardUtil;
+import com.amazon.kindle.kindlet.ui.KOptionPane;
 
 public class CrosswordPanel extends JComponent {
 	private Panel model;
 	
-	private OnscreenKeyboardManager keyboard;
 	private KindletContext ctx;
 	
 	private Word currentlyEditing;
-	private String editingBuffer;
 	
 	private int scale = 40;
 	private Font keyFont = new Font("SansSerif", Font.PLAIN, 9);
@@ -50,7 +49,6 @@ public class CrosswordPanel extends JComponent {
 
 		this.model = model;
 		this.ctx = ctx;
-		this.keyboard = ctx.getOnscreenKeyboardManager();
 		
 		preferredSize = new Dimension(model.getWidth() * scale, model.getHeight() * scale);
 		
@@ -67,31 +65,17 @@ public class CrosswordPanel extends JComponent {
 				currentlyEditing = w;
 				
 				boolean showKeyboard = currentlyEditing != null;
-				editingBuffer="";
-				keyboard.setVisible(showKeyboard);
 				
+				if (showKeyboard) {
+					String word = KOptionPane.showInputDialog(CrosswordPanel.this, "Word", w.getSolution());
+					w.setSolution(word.toUpperCase());
+				}
+
 				repaint(250);
 			}
 			
 		};
 		
-		addKeyListener(new KeyAdapter() {
-
-			public void keyTyped(KeyEvent e) {
-				if (currentlyEditing != null) {
-					if (KeyEvent.VK_ENTER == e.getKeyCode()) {
-						currentlyEditing.setSolution(editingBuffer);
-						currentlyEditing = null;
-						editingBuffer="";
-						keyboard.setVisible(false);
-					}
-					editingBuffer += Character.toUpperCase(e.getKeyChar());
-				}
-
-				repaint(50);
-			}
-			
-		});
 		
 		 final ActionMap actionMap = getActionMap();
 		 actionMap.put(Gestures.ACTION_FLICK_EAST, flick);
@@ -175,6 +159,7 @@ public class CrosswordPanel extends JComponent {
 			Rectangle r = getWordRectangle(currentlyEditing);
 			g.setColor(Color.lightGray);
 			g.fillRect(r.x, r.y, r.width, r.height);
+//			paintString(g, fmSol, currentlyEditing, r, editingBuffer);
 		}
 
 		
@@ -187,19 +172,7 @@ public class CrosswordPanel extends JComponent {
 			Rectangle r = getWordRectangle(w);
 			
 			String s = w.getSolution();
-			for (int is = 0; is<s.length(); is++) {
-				char c = s.charAt(is);
-				int dx = 0;
-				int dy = 0;
-				
-				if (w.getDirection() == Word.DIRECTION_HORIZONTAL)
-					dx = is * scale;
-				else
-					dy = is * scale;
-				
-				g.drawString(""+c, dx+r.x+(scale - fmSol.charWidth(c)), dy+r.y+fmSol.getHeight());
-				
-			}
+			paintString(g, fmSol, w, r, s);
 		}
 
 		
@@ -210,6 +183,28 @@ public class CrosswordPanel extends JComponent {
 
 		for (int y = 0; y <= model.getHeight(); ++y) {
 			g.drawLine(bounds.x, bounds.y + y * scale, bounds.x + model.getWidth() * scale, bounds.y + y * scale);
+		}
+	}
+
+
+
+
+
+
+	private void paintString(Graphics g, FontMetrics fmSol, Word w,
+			Rectangle r, String s) {
+		for (int is = 0; is<s.length(); is++) {
+			char c = s.charAt(is);
+			int dx = 0;
+			int dy = 0;
+			
+			if (w.getDirection() == Word.DIRECTION_HORIZONTAL)
+				dx = is * scale;
+			else
+				dy = is * scale;
+			
+			g.drawString(""+c, dx+r.x+(scale - fmSol.charWidth(c)), dy+r.y+fmSol.getHeight());
+			
 		}
 	}
 
