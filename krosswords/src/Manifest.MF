@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Description: Krosswords (Description)
+Main-Class: littlelui.krosswords.Main
+Implementation-Version: 1.0
+Implementation-Title: Krosswords
+Implementation-Vendor: LittleLui
+

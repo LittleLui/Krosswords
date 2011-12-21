@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/kindle-unofficial-sdk"/>
+	<classpathentry kind="lib" path="lib/Kindlet-2.0.jar" sourcepath="/kindle-unofficial-sdk/src-jad/"/>
+	<classpathentry kind="lib" path="lib/KindletBookletDRM-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/KindletImplementation-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/KindletSystemPlugins-2.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/utilities.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

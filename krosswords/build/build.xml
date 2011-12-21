@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="sign" default="sign">
+    <target name="sign">
+    	<signjar jar="../target/krosswords.jar" 
+    		keystore="developer.keystore" 
+    		alias="dkLittleLui" 
+    		storepass="leiste"/>         
+    	<signjar jar="../target/krosswords.jar" 
+    		keystore="developer.keystore" 
+    		alias="diLittleLui" 
+    		storepass="leiste"/>         
+    	<signjar jar="../target/krosswords.jar" 
+    		keystore="developer.keystore" 
+    		alias="dnLittleLui" 
+    		storepass="leiste"/>      
+    	<rename src="../target/krosswords.jar" dest="../target/krosswords.azw2"/>
+    	<!-- <copy file="../target/krosswords.azw2" todir="F:/documents"/>-->
+    	 <scp file="../target/krosswords.azw2" todir="root:leiste@192.168.15.244:/mnt/us/documents" trust="yes"/> 
+    </target>
+</project>
+
