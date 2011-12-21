@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="lib/KindletSystemPlugins-2.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/utilities.jar"/>
+	<classpathentry kind="lib" path="lib/kafui.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

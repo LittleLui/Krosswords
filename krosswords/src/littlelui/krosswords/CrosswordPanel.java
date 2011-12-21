@@ -9,8 +9,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +16,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
+import javax.swing.JTextField;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
@@ -26,9 +25,8 @@ import com.amazon.kindle.kindlet.KindletContext;
 import com.amazon.kindle.kindlet.event.GestureDispatcher;
 import com.amazon.kindle.kindlet.event.GestureEvent;
 import com.amazon.kindle.kindlet.input.Gestures;
-import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardManager;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardUtil;
-import com.amazon.kindle.kindlet.ui.KOptionPane;
+import com.amazon.kindle.kindlet.ui.KRepaintManager;
 
 public class CrosswordPanel extends JComponent {
 	private Panel model;
@@ -36,6 +34,7 @@ public class CrosswordPanel extends JComponent {
 	private KindletContext ctx;
 	
 	private Word currentlyEditing;
+	private JTextField editingTf;
 	
 	private int scale = 40;
 	private Font keyFont = new Font("SansSerif", Font.PLAIN, 9);
@@ -44,11 +43,14 @@ public class CrosswordPanel extends JComponent {
 	private Dimension preferredSize;
 	
 
-	public CrosswordPanel(Panel model, KindletContext ctx) {
+	public CrosswordPanel(Panel model, KindletContext ctx, JTextField tf) {
 		super();
 
 		this.model = model;
 		this.ctx = ctx;
+		this.editingTf = tf;
+		
+		tf.setVisible(false);
 		
 		preferredSize = new Dimension(model.getWidth() * scale, model.getHeight() * scale);
 		
@@ -65,13 +67,20 @@ public class CrosswordPanel extends JComponent {
 				currentlyEditing = w;
 				
 				boolean showKeyboard = currentlyEditing != null;
+				editingTf.setVisible(showKeyboard);
 				
 				if (showKeyboard) {
-					String word = KOptionPane.showInputDialog(CrosswordPanel.this, "Word", w.getSolution());
-					w.setSolution(word.toUpperCase());
+					editingTf.setBounds(getWordRectangle(w));
+					editingTf.requestFocus();
+					
+
+//					String word = KOptionPane.showInputDialog(CrosswordPanel.this, "Word", w.getSolution());
+//					w.setSolution(word.toUpperCase());
 				}
 
-				repaint(250);
+//				paint(getGraphics());
+				KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
+//				repaint(250);
 			}
 			
 		};
@@ -129,12 +138,12 @@ public class CrosswordPanel extends JComponent {
 
 
 	public void paint(Graphics g) {
-		Rectangle bounds = getBounds();
-		
 		super.paint(g);
+		Rectangle bounds = getBounds();
+		g.translate(bounds.x, bounds.y);
 		
 		g.setColor(Color.darkGray);
-		g.fillRect(bounds.x, bounds.y, model.getWidth() * scale, model.getHeight() * scale);
+		g.fillRect(0, 0, model.getWidth() * scale, model.getHeight() * scale);
 
 		FontMetrics fmKey = g.getFontMetrics(keyFont);
 		FontMetrics fmSol = g.getFontMetrics(solutionFont);
@@ -178,12 +187,14 @@ public class CrosswordPanel extends JComponent {
 		
 		g.setColor(Color.black);
 		for (int x = 0; x <= model.getWidth(); ++x) {
-			g.drawLine(bounds.x + x * scale, bounds.y, bounds.x + x * scale, bounds.y + model.getHeight() * scale);
+			g.drawLine(x * scale, 0, x * scale, model.getHeight() * scale);
 		}
 
 		for (int y = 0; y <= model.getHeight(); ++y) {
-			g.drawLine(bounds.x, bounds.y + y * scale, bounds.x + model.getWidth() * scale, bounds.y + y * scale);
+			g.drawLine(0, y * scale, model.getWidth() * scale, y * scale);
 		}
+		
+		super.paintChildren(g);
 	}
 
 

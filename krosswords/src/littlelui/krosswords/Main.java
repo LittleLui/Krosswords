@@ -12,13 +12,17 @@ package littlelui.krosswords;
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
  *  
  */
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+
+import javax.swing.JTextField;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
@@ -81,11 +85,18 @@ Senkrecht:
 		public void start() {
                 try {
                 		Container c = ctx.getRootContainer();
-                		c.setLayout(new BorderLayout());
-                		CrosswordPanel cp = new CrosswordPanel(model, ctx);
-                        c.add(cp, BorderLayout.CENTER);
-                        cp.requestFocus();
-                        cp.requestFocusInWindow();
+                		c.setLayout(new FlowLayout());
+                		JTextField tf = new JTextField("foobar");
+                		CrosswordPanel cp = new CrosswordPanel(model, ctx, tf);
+                        c.add(cp);
+                        
+                        c.setLayout(null);
+                        Dimension d = cp.getPreferredSize();
+                        cp.setBounds(0,0, d.width, d.height);
+                        
+                        c.add(tf);
+                        tf.requestFocus();
+                        tf.requestFocusInWindow();
                         ctx.getOnscreenKeyboardManager().setVisible(true);
                         
                 } catch (Throwable t) {
