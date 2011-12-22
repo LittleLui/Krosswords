@@ -1,7 +1,7 @@
 package littlelui.krosswords;
 
+import java.awt.Color;
 import java.awt.Container;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -11,8 +11,6 @@ import java.util.List;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardUtil;
 
 import littlelui.krosswords.model.Word;
 
@@ -27,7 +25,6 @@ public class Editor {
 		this.parent = parent;
 		this.crosswordPanel = crosswordPanel;
 		
-		Rectangle r = crosswordPanel.getWordRectangle(w);
 		String solution = w.getSolution();
 		for (int i=0; i<w.getLength(); i++) {
 			JTextField tf = createTextField(solution, i);
@@ -41,18 +38,21 @@ public class Editor {
 	}
 	
 	public void save() {
-		String s = "";
 		for (int i=0; i<textfields.size(); i++){
 			JTextField tf = (JTextField)textfields.get(i);
 			String text = tf.getText();
-			if (text != null && text.length() > 0) 
-				s += text;
-			else
-				s+= " ";
+			w.setSolution(i, text);
+
+			int centerX = tf.getBounds().x + crosswordPanel.getScale()/2;
+			int centerY = tf.getBounds().y + crosswordPanel.getScale()/2;
+			Word crossing = crosswordPanel.getWordAt(centerX, centerY, w.getCrossDirection() == Word.DIRECTION_HORIZONTAL); 
+			if (crossing != null) {
+				int iCrossing = crosswordPanel.getIndexInWord(centerX, centerY, crossing);
+				crossing.setSolution(iCrossing, text);
+			}
 			
 			parent.remove(tf);
 		}
-		w.setSolution(s);
 		crosswordPanel.requestFocusInWindow();
 		crosswordPanel.stopEditing();
 	}
@@ -65,6 +65,7 @@ public class Editor {
 
 	private JTextField createTextField(String solution, final int idx) {
 		final JTextField tf = new JTextField();
+		tf.setBackground(Color.lightGray);
 		if (solution != null && solution.length() > idx) {
 			String text = solution.substring(idx, idx+1);
 			if (text == null || text.trim().length() == 0)

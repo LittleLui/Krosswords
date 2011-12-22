@@ -24,6 +24,8 @@ import com.amazon.kindle.kindlet.KindletContext;
 import com.amazon.kindle.kindlet.event.GestureDispatcher;
 import com.amazon.kindle.kindlet.event.GestureEvent;
 import com.amazon.kindle.kindlet.input.Gestures;
+import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardManager;
+import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardProperties;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardUtil;
 import com.amazon.kindle.kindlet.ui.KRepaintManager;
 
@@ -50,7 +52,9 @@ public class CrosswordPanel extends JComponent {
 		
 		preferredSize = new Dimension(model.getWidth() * scale, model.getHeight() * scale);
 		
-		OnscreenKeyboardUtil.configure(this);
+		OnscreenKeyboardProperties kp = new OnscreenKeyboardProperties();
+		kp.addProperty(OnscreenKeyboardProperties.KEYBOARD_PROPERTY_DISABLED);
+		OnscreenKeyboardUtil.configure(this, OnscreenKeyboardUtil.KEYBOARD_MODE_NORMAL, kp);
 		
 		addMouseListener(new GestureDispatcher());
 		Action flick = new AbstractAction() {
@@ -71,7 +75,7 @@ public class CrosswordPanel extends JComponent {
 					editor = new Editor(w, CrosswordPanel.this, getParent());
 				}
 
-				KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
+				forceRepaint();
 			}
 			
 		};
@@ -98,7 +102,7 @@ public class CrosswordPanel extends JComponent {
 					
 				
 				}
-				KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
+				forceRepaint();
 			}
 		};
 		
@@ -113,6 +117,9 @@ public class CrosswordPanel extends JComponent {
 	}
 
 	
+	public int getScale() {
+		return scale;
+	}
 	
 	
 	public Word getWordAt(int x, int y) {
@@ -197,14 +204,6 @@ public class CrosswordPanel extends JComponent {
 			g.drawString(w.getKey(), r.x+2, r.y+2+fmKey.getHeight());
 		}
 
-		if (currentlyEditing != null) {
-			Rectangle r = getWordRectangle(currentlyEditing);
-			g.setColor(Color.lightGray);
-			g.fillRect(r.x, r.y, r.width, r.height);
-//			paintString(g, fmSol, currentlyEditing, r, editingBuffer);
-		}
-
-		
 		g.setColor(Color.black);
 		g.setFont(solutionFont);
 
@@ -294,7 +293,13 @@ public class CrosswordPanel extends JComponent {
 	public void stopEditing() {
 		currentlyEditing = null;
 		editor = null;
-		KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
+		forceRepaint();
+	}
+
+
+	private void forceRepaint() {
+		repaint();
+//		KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
 	}
 	
 	

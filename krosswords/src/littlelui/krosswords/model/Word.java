@@ -8,6 +8,7 @@ public class Word {
 	private int y;
 	private int length;
 	private int direction;
+	private int crossDirection;
 	
 	private String key;
 	private String hint;
@@ -28,6 +29,11 @@ public class Word {
 			throw new IllegalArgumentException("Direction has to be either horizontal or vertical.");
 		
 		this.direction = direction;
+		if (direction == DIRECTION_HORIZONTAL)
+			crossDirection = DIRECTION_VERTICAL;
+		else
+			crossDirection = DIRECTION_HORIZONTAL;
+			
 		this.key = key;
 		this.hint = hint;
 	}
@@ -55,6 +61,10 @@ public class Word {
 	public int getDirection() {
 		return direction;
 	}
+	
+	public int getCrossDirection() {
+		return crossDirection;
+	}
 
 	public String getKey() {
 		return key;
@@ -70,6 +80,29 @@ public class Word {
 
 	public void setSolution(String solution) {
 		this.solution = solution.toUpperCase();
+	}
+
+	public void setSolution(int i, String text) {
+		if (text == null || text.length() == 0)
+			text = " ";
+		
+		if (text.length() > 1)
+			text = text.substring(0, 1);
+		
+		if (solution.length() <= i) {
+			solution = solution + spaces(length - solution.length());
+		}
+
+		solution = solution.substring(0, i) + text + solution.substring(i+1);
+	}
+
+	private String spaces(int i) {
+		String s = "";
+		
+		for (int j=0; j<i; j++)
+			s += " ";
+		
+		return s;
 	}
 	
 	
