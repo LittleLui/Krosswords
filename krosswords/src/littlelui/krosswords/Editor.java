@@ -45,8 +45,10 @@ public class Editor {
 		for (int i=0; i<textfields.size(); i++){
 			JTextField tf = (JTextField)textfields.get(i);
 			String text = tf.getText();
-			if (text != null)
+			if (text != null && text.length() > 0) 
 				s += text;
+			else
+				s+= " ";
 			
 			parent.remove(tf);
 		}
@@ -64,7 +66,11 @@ public class Editor {
 	private JTextField createTextField(String solution, final int idx) {
 		final JTextField tf = new JTextField();
 		if (solution != null && solution.length() > idx) {
-			tf.setText(solution.substring(idx, idx+1));
+			String text = solution.substring(idx, idx+1);
+			if (text == null || text.trim().length() == 0)
+				text = "";
+			
+			tf.setText(text); 
 		}
 		
 		tf.addKeyListener(new KeyAdapter() {

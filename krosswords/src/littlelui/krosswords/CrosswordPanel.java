@@ -92,6 +92,7 @@ public class CrosswordPanel extends JComponent {
 
 						currentlyEditing = w;
 						editor = new Editor(w, CrosswordPanel.this, getParent());
+						editor.focusLetter(getIndexInWord(p.x, p.y, w)); 
 					}
 					
 					
