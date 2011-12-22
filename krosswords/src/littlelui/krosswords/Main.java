@@ -85,19 +85,13 @@ Senkrecht:
 		public void start() {
                 try {
                 		Container c = ctx.getRootContainer();
-                		c.setLayout(new FlowLayout());
-                		JTextField tf = new JTextField("foobar");
-                		CrosswordPanel cp = new CrosswordPanel(model, ctx, tf);
+                        c.setLayout(null);
+                		CrosswordPanel cp = new CrosswordPanel(model, ctx);
                         c.add(cp);
                         
-                        c.setLayout(null);
                         Dimension d = cp.getPreferredSize();
                         cp.setBounds(0,0, d.width, d.height);
-                        
-                        c.add(tf);
-                        tf.requestFocus();
-                        tf.requestFocusInWindow();
-                        ctx.getOnscreenKeyboardManager().setVisible(true);
+
                         
                 } catch (Throwable t) {
                         t.printStackTrace();

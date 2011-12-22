@@ -16,7 +16,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
-import javax.swing.JTextField;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
@@ -34,7 +33,7 @@ public class CrosswordPanel extends JComponent {
 	private KindletContext ctx;
 	
 	private Word currentlyEditing;
-	private JTextField editingTf;
+	private Editor editor;
 	
 	private int scale = 40;
 	private Font keyFont = new Font("SansSerif", Font.PLAIN, 9);
@@ -43,14 +42,11 @@ public class CrosswordPanel extends JComponent {
 	private Dimension preferredSize;
 	
 
-	public CrosswordPanel(Panel model, KindletContext ctx, JTextField tf) {
+	public CrosswordPanel(Panel model, KindletContext ctx) {
 		super();
 
 		this.model = model;
 		this.ctx = ctx;
-		this.editingTf = tf;
-		
-		tf.setVisible(false);
 		
 		preferredSize = new Dimension(model.getWidth() * scale, model.getHeight() * scale);
 		
@@ -64,39 +60,66 @@ public class CrosswordPanel extends JComponent {
 				Point p = ge.getLocation();
 				
 				Word w = getWordAt(p.x, p.y, horizontal);
-				currentlyEditing = w;
 				
-				boolean showKeyboard = currentlyEditing != null;
-				editingTf.setVisible(showKeyboard);
+				if (editor != null) {
+					editor.save();
+					editor = null;
+				}
 				
-				if (showKeyboard) {
-					editingTf.setBounds(getWordRectangle(w));
-					editingTf.requestFocus();
-					
-
-//					String word = KOptionPane.showInputDialog(CrosswordPanel.this, "Word", w.getSolution());
-//					w.setSolution(word.toUpperCase());
+				if (w != null) {
+					currentlyEditing = w;
+					editor = new Editor(w, CrosswordPanel.this, getParent());
 				}
 
-//				paint(getGraphics());
 				KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
-//				repaint(250);
 			}
 			
 		};
 		
+		Action tap = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				GestureEvent ge = (GestureEvent) e;
+				Point p = ge.getLocation();
+				
+				Word w = getWordAt(p.x, p.y);
+				if (w != null) {
+					if (currentlyEditing == w) {
+						editor.focusLetter(getIndexInWord(p.x, p.y, w));
+					} else {
+						if (editor != null) {
+							editor.save();
+						}
+
+						currentlyEditing = w;
+						editor = new Editor(w, CrosswordPanel.this, getParent());
+					}
+					
+					
+				
+				}
+				KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
+			}
+		};
 		
 		 final ActionMap actionMap = getActionMap();
 		 actionMap.put(Gestures.ACTION_FLICK_EAST, flick);
 		 actionMap.put(Gestures.ACTION_FLICK_WEST, flick);
 		 actionMap.put(Gestures.ACTION_FLICK_NORTH, flick);
 		 actionMap.put(Gestures.ACTION_FLICK_SOUTH, flick);
+
+		 actionMap.put(Gestures.ACTION_TAP, tap);
 		 setActionMap(actionMap);
 	}
 
 	
 	
 	
+	public Word getWordAt(int x, int y) {
+		Word w = getWordAt(x, y, true);
+		if (w == null)
+			w = getWordAt(x, y, false);
+		return w;
+	}
 
 
 	public Word getWordAt(int x, int y, boolean horizontal) {
@@ -113,6 +136,15 @@ public class CrosswordPanel extends JComponent {
 		return null;
 	}
 
+	public int getIndexInWord(int x, int y, Word word) {
+		
+		Rectangle r = getWordRectangle(word);
+		if (r.contains(x, y)) {
+			int i = word.getDirection() == Word.DIRECTION_HORIZONTAL ? ((x - r.x) / scale) : ((y - r.y) / scale);
+			return i;
+		}
+		return -1;
+	}
 
 
 
@@ -214,16 +246,29 @@ public class CrosswordPanel extends JComponent {
 			else
 				dy = is * scale;
 			
-			g.drawString(""+c, dx+r.x+(scale - fmSol.charWidth(c)), dy+r.y+fmSol.getHeight());
+			g.drawString(""+c, dx+r.x+(scale - fmSol.charWidth(c))/2, dy+r.y+fmSol.getHeight());
 			
 		}
 	}
 
 
 
+	Rectangle getLetterRectangle(Word w, int idx) {
+		int x = w.getX() * scale + 1;
+		int y = w.getY() * scale + 1;
+		
+		int x2 = x + idx*scale;
+		int y2 = y;
+		
+		if (w.getDirection() == Word.DIRECTION_VERTICAL) {
+			x2 = x;
+			y2 = y + idx*scale;
+		}
+		Rectangle r = new Rectangle(x2, y2, scale, scale);
+		return r;
+	}
 
-
-	private Rectangle getWordRectangle(Word w) {
+	Rectangle getWordRectangle(Word w) {
 		int x = w.getX() * scale + 1;
 		int y = w.getY() * scale + 1;
 		
@@ -238,6 +283,17 @@ public class CrosswordPanel extends JComponent {
 		}
 		Rectangle r = new Rectangle(x, y, width, height);
 		return r;
+	}
+
+
+
+
+
+
+	public void stopEditing() {
+		currentlyEditing = null;
+		editor = null;
+		KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
 	}
 	
 	

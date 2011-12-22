@@ -69,7 +69,7 @@ public class Word {
 	}
 
 	public void setSolution(String solution) {
-		this.solution = solution;
+		this.solution = solution.toUpperCase();
 	}
 	
 	
