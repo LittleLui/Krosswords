@@ -31,6 +31,9 @@ public class Editor {
 			textfields.add(tf);
 			Rectangle l = crosswordPanel.getLetterRectangle(w, i);
 			parent.add(tf);
+			l.x = l.x + crosswordPanel.getBounds().x;
+			l.y = l.y + crosswordPanel.getBounds().y;
+			
 			tf.setBounds(l);
 		}
 		
@@ -43,8 +46,8 @@ public class Editor {
 			String text = tf.getText();
 			w.setSolution(i, text);
 
-			int centerX = tf.getBounds().x + crosswordPanel.getScale()/2;
-			int centerY = tf.getBounds().y + crosswordPanel.getScale()/2;
+			int centerX = tf.getBounds().x - crosswordPanel.getBounds().x + crosswordPanel.getScale()/2;
+			int centerY = tf.getBounds().y - crosswordPanel.getBounds().y + crosswordPanel.getScale()/2;
 			Word crossing = crosswordPanel.getWordAt(centerX, centerY, w.getCrossDirection() == Word.DIRECTION_HORIZONTAL); 
 			if (crossing != null) {
 				int iCrossing = crosswordPanel.getIndexInWord(centerX, centerY, crossing);

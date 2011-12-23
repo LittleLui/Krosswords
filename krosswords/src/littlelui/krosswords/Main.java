@@ -12,17 +12,12 @@ package littlelui.krosswords;
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
  *  
  */
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 
-import javax.swing.JTextField;
+import javax.swing.JPanel;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
@@ -85,9 +80,13 @@ Senkrecht:
 		public void start() {
                 try {
                 		Container c = ctx.getRootContainer();
-                        c.setLayout(null);
+                        c.setLayout(new BorderLayout());
+                        
+                        JPanel pTop = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
+                        c.add(pTop, BorderLayout.NORTH); 
                 		CrosswordPanel cp = new CrosswordPanel(model, ctx);
-                        c.add(cp);
+                        pTop.add(cp);
+
                         
                         Dimension d = cp.getPreferredSize();
                         cp.setBounds(0,0, d.width, d.height);
@@ -98,41 +97,5 @@ Senkrecht:
                         throw new RuntimeException(t.getMessage(), t);
                 }
         }
-        
-        
-        private class MyComponent extends Component {
-        	private String text;
 
-        	
-        	
-			public MyComponent(String text) {
-				super();
-				this.text = text;
-			}
-
-			
-
-			public void paint(Graphics g) {
-				super.paint(g);
-
-				g.setColor(Color.black);
-
-				Rectangle2D rView = g.getClipBounds();
-				FontMetrics fm = g.getFontMetrics();
-				if (fm != null) {
-					int width = fm.stringWidth(text);
-					int height = fm.getHeight();
-					
-					int x2 = (int)((rView.getWidth() - width)/2 + rView.getMinX());
-					int y2 = (int)((rView.getHeight() - height)/2 + rView.getMinY());
-					
-					
-					g.drawString(text, x2, y2);
-				}				
-				
-				g.drawLine(0, 0, 100,100);
-				g.drawLine(0, 100, 100, 0);
-			}
-        	
-        }
 }

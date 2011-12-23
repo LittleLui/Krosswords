@@ -24,10 +24,8 @@ import com.amazon.kindle.kindlet.KindletContext;
 import com.amazon.kindle.kindlet.event.GestureDispatcher;
 import com.amazon.kindle.kindlet.event.GestureEvent;
 import com.amazon.kindle.kindlet.input.Gestures;
-import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardManager;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardProperties;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardUtil;
-import com.amazon.kindle.kindlet.ui.KRepaintManager;
 
 public class CrosswordPanel extends JComponent {
 	private Panel model;
@@ -60,10 +58,13 @@ public class CrosswordPanel extends JComponent {
 		Action flick = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				GestureEvent ge = (GestureEvent) e;
-				boolean horizontal = ge.getActionCommand().equals(Gestures.ACTION_FLICK_EAST) || ge.getActionCommand().equals(Gestures.ACTION_FLICK_WEST);
 				Point p = ge.getLocation();
+				int x = p.x - getBounds().x; 
+				int y = p.y - getBounds().y;
 				
-				Word w = getWordAt(p.x, p.y, horizontal);
+				boolean horizontal = ge.getActionCommand().equals(Gestures.ACTION_FLICK_EAST) || ge.getActionCommand().equals(Gestures.ACTION_FLICK_WEST);
+				
+				Word w = getWordAt(x, y, horizontal);
 				
 				if (editor != null) {
 					editor.save();
@@ -84,11 +85,13 @@ public class CrosswordPanel extends JComponent {
 			public void actionPerformed(ActionEvent e) {
 				GestureEvent ge = (GestureEvent) e;
 				Point p = ge.getLocation();
+				int x = p.x;
+				int y = p.y;
 				
-				Word w = getWordAt(p.x, p.y);
+				Word w = getWordAt(x, y);
 				if (w != null) {
 					if (currentlyEditing == w) {
-						editor.focusLetter(getIndexInWord(p.x, p.y, w));
+						editor.focusLetter(getIndexInWord(x, y, w));
 					} else {
 						if (editor != null) {
 							editor.save();
@@ -96,7 +99,7 @@ public class CrosswordPanel extends JComponent {
 
 						currentlyEditing = w;
 						editor = new Editor(w, CrosswordPanel.this, getParent());
-						editor.focusLetter(getIndexInWord(p.x, p.y, w)); 
+						editor.focusLetter(getIndexInWord(x, y, w)); 
 					}
 					
 					
@@ -179,8 +182,6 @@ public class CrosswordPanel extends JComponent {
 
 	public void paint(Graphics g) {
 		super.paint(g);
-		Rectangle bounds = getBounds();
-		g.translate(bounds.x, bounds.y);
 		
 		g.setColor(Color.darkGray);
 		g.fillRect(0, 0, model.getWidth() * scale, model.getHeight() * scale);
