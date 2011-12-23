@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -88,26 +89,38 @@ public class Editor {
 		});
 		
 		tf.getDocument().addDocumentListener(new DocumentListener() {
-			private void fix() {
-				String tx = tf.getText();
-				if (tx != null && tx.length() > 1) {
-					tf.setText(tx.substring(tx.length()-1));
-				}
+			private void fixAndGoTo(int idx) {
+				
+				if (idx < 0)
+					idx = 0;
+				
+				if (idx >= w.getLength())
+					idx = w.getLength() - 1;
+				
+				final int i = idx;
+				
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						String tx = tf.getText();
+						if (tx != null && tx.length() > 1) {
+							tf.setText(tx.substring(tx.length()-1));
+						}
+						goTo(i);
+					}
+					
+				});
 			}
 			
 			public void removeUpdate(DocumentEvent e) {
-				fix();
-				goTo(idx-1);
+				fixAndGoTo(idx-1);
 			}
 			
 			public void insertUpdate(DocumentEvent e) {
-				fix();
-				goTo(idx+1);
+				fixAndGoTo(idx+1);
 			}
 			
 			public void changedUpdate(DocumentEvent e) {
-				fix();
-				goTo(idx+1);
+				fixAndGoTo(idx+1);
 			}
 		});
 		

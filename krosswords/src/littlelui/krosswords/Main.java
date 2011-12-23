@@ -91,11 +91,11 @@ Senkrecht:
                 		CrosswordPanel cp = new CrosswordPanel(model, ctx);
                         pTop.add(cp);
 
-                        JEditorPane jp = new JEditorPane("text/html");
+                        JEditorPane jp = new JEditorPane("text/html", "");
                         String text = generateHtmlText();
                         jp.setText(text);
                         
-                        TODO: this causes crash!
+//                        TODO: this causes crash!
                         
                         JScrollPane spBottom = new JScrollPane(jp);
                         c.add(spBottom, BorderLayout.CENTER);
