@@ -3,31 +3,37 @@ package littlelui.krosswords;
 /* todo next steps:
  * 
  *  - toolbar ausblenden
- *  - charmanteres layout
- *  - hints anzeigen (scrollend?)
+ *  
+ *  - bei tap auf hint editing des worts starten
  *  - bei tap auf key die hints des/der dort beginnenden worte anzeigen (popup? hinscrollen?)
- *  - solution eingeben lassen (und dabei länge und konformität mit kreuzenden wörtern prüfen)
  *  - zwischenstand speichern und laden
  *  - kreuzworträtsel automatisch von derstandard.at laden
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
  *  
  */
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Label;
 import java.util.Iterator;
 
-import javax.swing.JEditorPane;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
+import com.amazon.kindle.kindlet.ui.KPages;
+import com.amazon.kindle.kindlet.ui.pages.PageProviders;
 
 public class Main extends AbstractKindlet {
         
@@ -91,14 +97,9 @@ Senkrecht:
                 		CrosswordPanel cp = new CrosswordPanel(model, ctx);
                         pTop.add(cp);
 
-                        JEditorPane jp = new JEditorPane("text/html", "");
-                        String text = generateHtmlText();
-                        jp.setText(text);
-                        
-//                        TODO: this causes crash!
-                        
-                        JScrollPane spBottom = new JScrollPane(jp);
-                        c.add(spBottom, BorderLayout.CENTER);
+                        KPages hc = new KPages(PageProviders.createBoxLayoutProvider(BoxLayout.Y_AXIS));
+                        addHints(hc);
+                        c.add(hc, BorderLayout.CENTER);
 
                         
                 } catch (Throwable t) {
@@ -106,25 +107,70 @@ Senkrecht:
                         throw new RuntimeException(t.getMessage(), t);
                 }
         }
+		
+		private void add(Container cont, Component comp) {
+			if (cont instanceof KPages) 
+				((KPages)cont).addItem(comp);
+			else
+				cont.add(comp);
+		}
 
-		private String generateHtmlText() {
-			String s = "<html><h3>Horizontal</h3>\n";
+		private void addHints(Container c) {
+			addLabel(c, "Horizontal");
 
             Iterator/*<Word>*/ i = model.getHorizontalWords().iterator();
             while (i.hasNext()) {
             	Word w = (Word)i.next();
-            	s += "<b>"+w.getKey() + "</b> "+w.getHint()+"<br/>\n";
+            	JComponent jta = createHintText(w);
+            	add(c, jta);
             }
             
             i = model.getVerticalWords().iterator();
 			
-            s += "<hr><h3>Horizontal</h3>\n";
+            add(c, new JLabel(" "));
+			addLabel(c, "Vertikal");
             while (i.hasNext()) {
             	Word w = (Word)i.next();
-            	s += "<b>"+w.getKey() + "</b> "+w.getHint()+"<br/>\n";
+            	JComponent jta = createHintText(w);
+            	add(c, jta);
             }
+		}
 
-			return s;
+		private void addLabel(Container c, String string) {
+			JTextArea l = new JTextArea(string);
+			l.setEditable(false);
+			l.setEnabled(false); //should still allow mouse clicks
+			l.setBorder(null);
+			l.setDisabledTextColor(Color.BLACK);
+			
+			add(c, l);
+		}
+
+		private JComponent createHintText(Word w) {
+			JLabel llNr = new JLabel(w.getKey()+" ");
+			llNr.setForeground(Color.DARK_GRAY);
+			JPanel lNr = new JPanel();
+			lNr.setLayout(new BoxLayout(lNr, BoxLayout.Y_AXIS));
+			lNr.add(llNr);
+//			llNr.setFont(llNr.getFont().deriveFont(18f));
+
+			JTextArea jta = new JTextArea(w.getHint());
+			jta.setLineWrap(true);
+			jta.setWrapStyleWord(true);
+			jta.setEditable(false);
+			jta.setEnabled(false); //should still allow mouse clicks
+			jta.setBorder(null);
+			jta.setDisabledTextColor(Color.DARK_GRAY);
+//			jta.setFont(jta.getFont().deriveFont(18f));
+			
+			JPanel p = new JPanel(new BorderLayout());
+//			BoxLayout bl = new BoxLayout(p, BoxLayout.X_AXIS);
+//			p.setLayout(bl);
+
+			p.add(lNr, BorderLayout.WEST);
+			p.add(jta, BorderLayout.CENTER);
+			
+			return p;
 		}
 
 }

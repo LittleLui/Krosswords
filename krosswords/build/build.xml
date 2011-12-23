@@ -15,7 +15,11 @@
     		storepass="leiste"/>      
     	<rename src="../target/krosswords.jar" dest="../target/krosswords.azw2"/>
     	<!-- <copy file="../target/krosswords.azw2" todir="F:/documents"/>-->
-    	 <scp file="../target/krosswords.azw2" todir="root:leiste@192.168.15.244:/mnt/us/documents" trust="yes"/> 
+    	
+    	<!-- usbnet --> 
+    	<!--  <scp file="../target/krosswords.azw2" todir="root:leiste@192.168.15.244:/mnt/us/documents" trust="yes"/> --> 
+    	<!-- wifi --> 
+    	 <scp file="../target/krosswords.azw2" todir="root:leiste@10.10.1.232:/mnt/us/documents" trust="yes"/> 
     </target>
 </project>
 

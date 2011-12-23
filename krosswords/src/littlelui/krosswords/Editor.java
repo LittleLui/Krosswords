@@ -45,14 +45,14 @@ public class Editor {
 		for (int i=0; i<textfields.size(); i++){
 			JTextField tf = (JTextField)textfields.get(i);
 			String text = tf.getText();
-			w.setSolution(i, text);
+			w.setSolution(i, text.toUpperCase());
 
 			int centerX = tf.getBounds().x - crosswordPanel.getBounds().x + crosswordPanel.getScale()/2;
 			int centerY = tf.getBounds().y - crosswordPanel.getBounds().y + crosswordPanel.getScale()/2;
 			Word crossing = crosswordPanel.getWordAt(centerX, centerY, w.getCrossDirection() == Word.DIRECTION_HORIZONTAL); 
 			if (crossing != null) {
 				int iCrossing = crosswordPanel.getIndexInWord(centerX, centerY, crossing);
-				crossing.setSolution(iCrossing, text);
+				crossing.setSolution(iCrossing, text.toUpperCase());
 			}
 			
 			parent.remove(tf);
@@ -83,6 +83,7 @@ public class Editor {
 			public void keyTyped(KeyEvent e) {
 				if (KeyEvent.VK_ENTER == e.getKeyCode() || '\n' == e.getKeyChar() || '\r' == e.getKeyChar()) {
 					save();
+					crosswordPanel.forceRepaint();
 				}
 			}
 			

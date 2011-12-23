@@ -35,8 +35,8 @@ public class CrosswordPanel extends JComponent {
 	private Word currentlyEditing;
 	private Editor editor;
 	
-	private int scale = 40;
-	private Font keyFont = new Font("SansSerif", Font.PLAIN, 9);
+	private int scale = 36;
+	private Font keyFont = new Font("SansSerif", Font.PLAIN, 11);
 	private Font solutionFont = new Font("SansSerif", Font.PLAIN, 22);
 
 	private Dimension preferredSize;
@@ -294,11 +294,10 @@ public class CrosswordPanel extends JComponent {
 	public void stopEditing() {
 		currentlyEditing = null;
 		editor = null;
-		forceRepaint();
 	}
 
 
-	private void forceRepaint() {
+	void forceRepaint() {
 		repaint();
 //		KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
 	}

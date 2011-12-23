@@ -23,6 +23,7 @@ public class KindletRunner implements KindletContext {
 	public KindletRunner() {
 		super();
 		jf.setSize(600, 800);
+		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 	public void run() {
