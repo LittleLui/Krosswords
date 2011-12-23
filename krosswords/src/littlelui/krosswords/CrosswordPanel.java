@@ -72,13 +72,12 @@ public class CrosswordPanel extends JComponent {
 				}
 				
 				if (w != null) {
-					currentlyEditing = w;
-					editor = new Editor(w, CrosswordPanel.this, getParent());
+					startEditing(w);
 				}
 
 				forceRepaint();
 			}
-			
+
 		};
 		
 		Action tap = new AbstractAction() {
@@ -97,9 +96,7 @@ public class CrosswordPanel extends JComponent {
 							editor.save();
 						}
 
-						currentlyEditing = w;
-						editor = new Editor(w, CrosswordPanel.this, getParent());
-						editor.focusLetter(getIndexInWord(x, y, w)); 
+						startEditing(w, getIndexInWord(x, y, w));
 					}
 					
 					
@@ -120,6 +117,21 @@ public class CrosswordPanel extends JComponent {
 	}
 
 	
+	protected void startEditing(Word w, int indexInWord) {
+		currentlyEditing = w;
+		editor = new Editor(w, CrosswordPanel.this, getParent());
+		
+		hp.setLocation(w.getLocation());
+		
+		if (indexInWord != 0)
+			editor.focusLetter(indexInWord); 
+	}
+
+	private void startEditing(Word w) {
+		startEditing(w, 0);
+	}
+	
+
 	public int getScale() {
 		return scale;
 	}
@@ -300,6 +312,11 @@ public class CrosswordPanel extends JComponent {
 	void forceRepaint() {
 		repaint();
 //		KRepaintManager.getInstance().repaint(CrosswordPanel.this, false);
+	}
+
+	private HintsPanel hp;
+	public void setHintsPanel(HintsPanel hp) {
+		this.hp = hp;
 	}
 	
 	

@@ -1,8 +1,8 @@
 package littlelui.krosswords.model;
 
 public class Word {
-	public static final int DIRECTION_HORIZONTAL = 0;
-	public static final int DIRECTION_VERTICAL = 1;
+	public static final int DIRECTION_HORIZONTAL = 1000;
+	public static final int DIRECTION_VERTICAL = 2000;
 	
 	private int x;
 	private int y;
@@ -10,6 +10,7 @@ public class Word {
 	private int direction;
 	private int crossDirection;
 	
+	private int location;
 	private String key;
 	private String hint;
 	
@@ -36,6 +37,16 @@ public class Word {
 			
 		this.key = key;
 		this.hint = hint;
+	}
+
+	
+	
+	public void setLocation(int location) {
+		this.location = location;
+	}
+
+	public int getLocation() {
+		return location;
 	}
 
 	public static int getDirectionHorizontal() {
