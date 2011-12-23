@@ -16,8 +16,12 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.util.Iterator;
 
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
@@ -87,9 +91,14 @@ Senkrecht:
                 		CrosswordPanel cp = new CrosswordPanel(model, ctx);
                         pTop.add(cp);
 
+                        JEditorPane jp = new JEditorPane("text/html");
+                        String text = generateHtmlText();
+                        jp.setText(text);
                         
-                        Dimension d = cp.getPreferredSize();
-                        cp.setBounds(0,0, d.width, d.height);
+                        TODO: this causes crash!
+                        
+                        JScrollPane spBottom = new JScrollPane(jp);
+                        c.add(spBottom, BorderLayout.CENTER);
 
                         
                 } catch (Throwable t) {
@@ -97,5 +106,25 @@ Senkrecht:
                         throw new RuntimeException(t.getMessage(), t);
                 }
         }
+
+		private String generateHtmlText() {
+			String s = "<html><h3>Horizontal</h3>\n";
+
+            Iterator/*<Word>*/ i = model.getHorizontalWords().iterator();
+            while (i.hasNext()) {
+            	Word w = (Word)i.next();
+            	s += "<b>"+w.getKey() + "</b> "+w.getHint()+"<br/>\n";
+            }
+            
+            i = model.getVerticalWords().iterator();
+			
+            s += "<hr><h3>Horizontal</h3>\n";
+            while (i.hasNext()) {
+            	Word w = (Word)i.next();
+            	s += "<b>"+w.getKey() + "</b> "+w.getHint()+"<br/>\n";
+            }
+
+			return s;
+		}
 
 }
