@@ -30,6 +30,7 @@ public class HintsPanel extends KPages {
         super(PageProviders.createBoxLayoutProvider(BoxLayout.Y_AXIS));
         this.model = model;
         addHints(this);
+        first();
 	}
 
 	private void doAdd(Container cont, Component comp) {

@@ -4,14 +4,17 @@ package littlelui.krosswords;
  * 
  *  - toolbar ausblenden
  *  
- *  - zwischenstand speichern und laden
  *  - kreuzworträtsel automatisch von derstandard.at laden
+ *  - zwischen rätseln wechseln usw...
+ *  - zwischenstand speichern und laden muss noch auf wechselnde rätsel angepasst werden
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
  *  
  */
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JPanel;
 
@@ -98,7 +101,29 @@ Senkrecht:
                         t.printStackTrace();
                         throw new RuntimeException(t.getMessage(), t);
                 }
+                
+    			File dir = ctx.getHomeDirectory();
+    			//TODO: find last panel we worked on and load it, then we can
+    			//load solution state of the panel
+    			try {
+    				model.loadSolutionState(dir);
+    			} catch (IOException ioe) {
+    				//TODO: log?
+    			}
         }
+
+	public void stop() {
+		File dir = ctx.getHomeDirectory();
+		// save solution state of the panel
+		try {
+			model.saveSolutionState(dir);
+		} catch (IOException ioe) {
+			// TODO: log?
+		}
+		// TODO: save panel's uri so we can re-open it when we open again
+	}		
+		
+		
 		
 
 }
