@@ -4,8 +4,6 @@ package littlelui.krosswords;
  * 
  *  - toolbar ausblenden
  *  
- *  - bei tap auf hint editing des worts starten
- *  - bei tap auf key die hints des/der dort beginnenden worte anzeigen (popup? hinscrollen?)
  *  - zwischenstand speichern und laden
  *  - kreuzworträtsel automatisch von derstandard.at laden
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
