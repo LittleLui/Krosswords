@@ -12,24 +12,16 @@ package littlelui.krosswords;
  *  
  */
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.util.Iterator;
 
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
-import com.amazon.kindle.kindlet.ui.KPages;
 
 public class Main extends AbstractKindlet {
         
@@ -39,6 +31,9 @@ public class Main extends AbstractKindlet {
 
         public void create(KindletContext context) {
                 this.ctx = context;
+                
+                //this crashed the thing.. damnit
+//                ((StandardKindletContext)ctx).getToolbar().setToolbarStyle(ToolbarStyle.TOOLBAR_TRANSIENT);
         }
 
         private static Panel createModel() {
