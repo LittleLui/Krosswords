@@ -4,8 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.util.Iterator;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -15,6 +19,7 @@ import javax.swing.JTextArea;
 import littlelui.krosswords.model.Panel;
 import littlelui.krosswords.model.Word;
 
+import com.amazon.kindle.kindlet.input.Gestures;
 import com.amazon.kindle.kindlet.ui.KPages;
 import com.amazon.kindle.kindlet.ui.pages.PageProviders;
 
@@ -70,13 +75,12 @@ public class HintsPanel extends KPages {
 		doAdd(c, l);
 	}
 
-	private JComponent createHintText(Word w) {
+	private JComponent createHintText(final Word w) {
 		JLabel llNr = new JLabel(w.getKey()+" ");
 		llNr.setForeground(Color.DARK_GRAY);
 		JPanel lNr = new JPanel();
 		lNr.setLayout(new BoxLayout(lNr, BoxLayout.Y_AXIS));
 		lNr.add(llNr);
-//		llNr.setFont(llNr.getFont().deriveFont(18f));
 
 		JTextArea jta = new JTextArea(w.getHint());
 		jta.setLineWrap(true);
@@ -85,11 +89,18 @@ public class HintsPanel extends KPages {
 		jta.setEnabled(false); //should still allow mouse clicks
 		jta.setBorder(null);
 		jta.setDisabledTextColor(Color.DARK_GRAY);
-//		jta.setFont(jta.getFont().deriveFont(18f));
+
+		 Action tap = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				cp.stopEditing();
+				cp.startEditing(w);
+			}
+		 };
+
+		 ActionMap actionMap = jta.getActionMap();
+		 actionMap.put(Gestures.ACTION_TAP, tap);
 		
 		JPanel p = new JPanel(new BorderLayout());
-//		BoxLayout bl = new BoxLayout(p, BoxLayout.X_AXIS);
-//		p.setLayout(bl);
 
 		p.add(lNr, BorderLayout.WEST);
 		p.add(jta, BorderLayout.CENTER);
@@ -97,9 +108,9 @@ public class HintsPanel extends KPages {
 		return p;
 	}
 
+	private CrosswordPanel cp;
 	public void setCrosswordPanel(CrosswordPanel cp) {
-		// TODO Auto-generated method stub
-		
+		this.cp = cp;
 	}
 
 }
