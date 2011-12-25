@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="sign" default="sign">
-    <target name="sign">
+<project name="krosswords" default="sign">
+	<target name="jar">
+		<unzip dest="../bin/">
+		    <fileset dir="../lib-distribute/">
+        		<include name="*.jar"/>
+        	</fileset>
+		</unzip> 
+		 <jar destfile="../target/krosswords.jar"
+		 	  basedir="../bin/"
+		 	  manifest="../src/Manifest.MF"/>
+	</target>
+
+
+    <target name="sign" depends="jar">
     	<signjar jar="../target/krosswords.jar" 
     		keystore="developer.keystore" 
     		alias="dkLittleLui" 
