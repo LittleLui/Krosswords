@@ -16,7 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import littlelui.krosswords.model.Panel;
+import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.input.Gestures;
@@ -24,9 +24,9 @@ import com.amazon.kindle.kindlet.ui.KPages;
 import com.amazon.kindle.kindlet.ui.pages.PageProviders;
 
 public class HintsPanel extends KPages {
-	private final Panel model;
+	private final Puzzle model;
 	
-	public HintsPanel(Panel model) {
+	public HintsPanel(Puzzle model) {
         super(PageProviders.createBoxLayoutProvider(BoxLayout.Y_AXIS));
         this.model = model;
         addHints(this);

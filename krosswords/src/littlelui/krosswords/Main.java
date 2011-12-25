@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import javax.swing.JPanel;
 
-import littlelui.krosswords.model.Panel;
+import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
@@ -28,7 +28,7 @@ public class Main extends AbstractKindlet {
         
         private KindletContext ctx;
         
-        private Panel model = createModel();
+        private Puzzle model = createModel();
 
         public void create(KindletContext context) {
                 this.ctx = context;
@@ -37,8 +37,8 @@ public class Main extends AbstractKindlet {
 //                ((StandardKindletContext)ctx).getToolbar().setToolbarStyle(ToolbarStyle.TOOLBAR_TRANSIENT);
         }
 
-        private static Panel createModel() {
-        	Panel p = new Panel(13, 13);
+        private static Puzzle createModel() {
+        	Puzzle p = new Puzzle(13, 13);
         	
         	p.add(new Word(0, 1, 4, Word.DIRECTION_HORIZONTAL, 7, "Er macht aus purer Schlamperei zu Noël den Weihnachts- zum Elternabend"));
         	p.add(new Word(5, 1, 8, Word.DIRECTION_HORIZONTAL, 8, "Bei Wels das Viertel zu erleben, heißt: Durchs Gebäude geht ein Beben"));

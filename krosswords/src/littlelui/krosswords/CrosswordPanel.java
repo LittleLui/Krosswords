@@ -17,7 +17,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 
-import littlelui.krosswords.model.Panel;
+import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.KindletContext;
@@ -28,7 +28,7 @@ import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardProperties;
 import com.amazon.kindle.kindlet.input.keyboard.OnscreenKeyboardUtil;
 
 public class CrosswordPanel extends JComponent {
-	private Panel model;
+	private Puzzle model;
 	
 	private KindletContext ctx;
 	
@@ -42,7 +42,7 @@ public class CrosswordPanel extends JComponent {
 	private Dimension preferredSize;
 	
 
-	public CrosswordPanel(Panel model, KindletContext ctx) {
+	public CrosswordPanel(Puzzle model, KindletContext ctx) {
 		super();
 
 		this.model = model;

@@ -9,7 +9,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Panel {
+public class Puzzle {
 	private int width;
 	private int height;
 	
@@ -17,7 +17,7 @@ public class Panel {
 	private List/*<Word>*/ verticalWords = new ArrayList();
 	private List/*<Word>*/ words = new ArrayList();
 
-	public Panel(int width, int height) {
+	public Puzzle(int width, int height) {
 		super();
 		this.width = width;
 		this.height = height;
