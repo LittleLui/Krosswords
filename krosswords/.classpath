@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/utilities.jar"/>
 	<classpathentry kind="lib" path="lib/kafui.jar"/>
 	<classpathentry kind="lib" path="lib-distribute/tagsoup-1.2.1.jar" sourcepath="D:/Download/Coden/tagsoup-1.2.1-src.zip"/>
+	<classpathentry kind="lib" path="lib-distribute/jakarta-regexp-1.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

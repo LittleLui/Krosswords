@@ -1,5 +1,7 @@
 package littlelui.krosswords.fetch;
 
+
+import java.awt.image.ImageProducer;
 import java.awt.image.PixelGrabber;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,26 +18,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
 
+import org.apache.regexp.RE;
 import org.ccil.cowan.tagsoup.Parser;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import sun.awt.image.URLImageSource;
-
 //TODO: respect encoding! (hints have broken umlauts)
 //TODO: error handling, running feedback
 //TODO: close streams when done!
 public class DerStandardFetcher implements Fetcher {
 	private final class PuzzleProducingContentHandler extends DefaultHandler {
+		private boolean mobile = false;
 		private boolean inCopyText = false;
 		private boolean primedHorizontalHints = false;
 		private boolean primedVerticalHints = false;
@@ -52,10 +52,14 @@ public class DerStandardFetcher implements Fetcher {
 		}
 
 		public void endDocument() {
+			if (grid != null) {
 			  Puzzle pz = new Puzzle(grid.length, grid[0].length);
 			  makeWordsHorizontal(grid, horizontalHints, pz);
 			  makeWordsVertical(grid, verticalHints, pz);
 			  this.puzzle = pz;
+			} else {
+				System.out.println("grid fail");
+			}
 		  }
 
 		private void makeWordsHorizontal(boolean[][] g, Map m, Puzzle pz) {
@@ -133,10 +137,13 @@ public class DerStandardFetcher implements Fetcher {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if ("div".equals(localName) && "copytext".equals(attributes.getValue("class"))) {
 				inCopyText = true;
+			} else if ("div".equals(localName) && "bodycopy".equals(attributes.getValue("class"))) {
+				inCopyText = true;
+				mobile = true;
 			}
 			
 			else if (inCopyText) {
-				if ("img".equals(localName) && "kreuzworträtsel".equalsIgnoreCase(attributes.getValue("alt"))) {
+				if ("img".equals(localName) && (mobile || "kreuzworträtsel".equalsIgnoreCase(attributes.getValue("alt")))) {
 					String src = attributes.getValue("src");
 					grid = fetchPuzzleImage(src);
 				} if (primedHorizontalHints && "p".equals(localName)) {
@@ -177,11 +184,15 @@ public class DerStandardFetcher implements Fetcher {
 		}
 
 		private void parseHints(String b, Map r) {
-			Matcher m = P_HINT.matcher(b+"___");
-			while (m.find()) {
-				String key = m.group(1);
-				String value = m.group(2);
+			int offset = 0;
+			RE re = new RE(P_HINT);
+			String s = b+"___";
+			int i = 0;
+			while (re.match(s, i)) {
+				String key = re.getParen(1);
+				String value = re.getParen(2);
 				r.put(key, value.trim());
+				i = re.getParenEnd(0);
 			}
 		}
 
@@ -207,22 +218,25 @@ public class DerStandardFetcher implements Fetcher {
 			}
 		}
 
-		private String parseIdFromHref(String href) {
-			java.util.regex.Matcher m = P_ID_FROM_HREF.matcher(href);
-			if (m.matches())
-				return m.group(1);
-			
-			return null;
-		}
+
 	}
 
-	private final String URL_INDEX = "http://derstandard.at/r1256744634465/Kreuzwortraetsel";
+	private final String URL_INDEX = "http://mobil.derstandard.at/r1256744634465/Kreuzwortraetsel";
 	
-	private static final Pattern P_ID_FROM_HREF = Pattern.compile("[A-Za-z\\-]+([0-9]+)\\?");
-	private static final Pattern P_HINT= Pattern.compile("([0-9]+)([^_]+)___");
-	private static final Pattern P_CHARSET_IN_TYPE = Pattern.compile("[A-Za-z0-9\\-/]+;\\s*charset=([A-Za-z0-9\\-]+)");
+	private static final String P_ID_FROM_HREF = "[A-Za-z\\-]+([0-9]+)";
+	private static final String P_HINT= "([0-9]+)([^_]+)___";
+	private static final String P_CHARSET_IN_TYPE = "[A-Za-z0-9\\-/]+;\\s*charset=([A-Za-z0-9\\-]+)";
 
-	
+	private static final String P_HREF_PUZZLE = "/Kreuzwortraetsel-Nr-";
+	private static final String P_HREF_SOLUTION = "Loesung-Kreuzwortraetsel";
+
+	private String parseIdFromHref(String href) {
+		RE re = new RE(P_ID_FROM_HREF);
+		if (re.match(href))
+			return re.getParen(1);
+		
+		return null;
+	}
 	public List fetchAvailablePuzzleIds(FetchCallback listener) {
 		final Map /*<String, PuzzleListEntry>*/ ples = new HashMap();
 		
@@ -238,14 +252,14 @@ public class DerStandardFetcher implements Fetcher {
 				if ("a".equals(localName)) {
 					String href = attributes.getValue("href");
 					if (href != null) {
-						if (href.contains("Loesung-Kreuzwortraetsel")) {
+						if (new RE(P_HREF_SOLUTION).match(href)) {
 							String id = parseIdFromHref(href);
 							if (id != null) {
 								PuzzleListEntry ple = createOrGet(ples, id);
 								ple.setAttribute("solution-url", "http://derstandard.at"+href);
 							}
 							
-						} else if (href.contains("/Kreuzwortraetsel-Nr-")) {
+						} else if (new RE(P_HREF_PUZZLE).match(href)) {
 							String id = parseIdFromHref(href);
 							if (id != null) {
 								PuzzleListEntry ple = createOrGet(ples, id);
@@ -259,13 +273,6 @@ public class DerStandardFetcher implements Fetcher {
 				}
 			}
 
-			private String parseIdFromHref(String href) {
-				java.util.regex.Matcher m = P_ID_FROM_HREF.matcher(href);
-				if (m.matches())
-					return m.group(1);
-				
-				return null;
-			}
 		  });
 		  
 		  p.parse(is);
@@ -280,11 +287,31 @@ public class DerStandardFetcher implements Fetcher {
 	
 	
 	public Puzzle fetchPuzzle(PuzzleListEntry listEntry) {
-		return fetchPuzzle(listEntry.getAttribute("puzzle-url"));
+		try {
+			Puzzle p = fetchPuzzle(listEntry.getAttribute("puzzle-url"));
+			
+			if (p != null) {
+				listEntry.setPuzzle(p);
+				listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOADED);
+			}
+			
+			return p;
+		} catch (Throwable t) {
+			System.out.println(t);
+			t.printStackTrace();
+			return null;
+		}
 	}
 	
 	private Puzzle fetchPuzzle(String url) {
-		try {
+		if (url == null) 
+			return null;
+		
+		if (url.startsWith("http://derstandard.at")) {
+			url = "http://mobile." + url.substring("http://".length());
+		}
+		
+		try { 
 			  InputSource is = fetchViaHttp(url);
 			  
 			  Parser p = new Parser();
@@ -306,14 +333,17 @@ public class DerStandardFetcher implements Fetcher {
 
 	private InputSource fetchViaHttp(String url) throws IOException, MalformedURLException, UnsupportedEncodingException {
 		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+		Map m = conn.getRequestProperties();
+
 		InputStream in = (InputStream) conn.getContent();
 		String encoding = conn.getContentEncoding();
 		String type = conn.getContentType();
 		
-		if (encoding == null && type.contains("charset=")) {
-			Matcher m = P_CHARSET_IN_TYPE.matcher(type);
-			if (m.find()) {
-				encoding = m.group(1);
+		
+		if (encoding == null) {
+			RE re = new RE(P_CHARSET_IN_TYPE);
+			if (re.match(type)) {
+				encoding = re.getParen(1);
 			}
 		}
 		
@@ -325,13 +355,18 @@ public class DerStandardFetcher implements Fetcher {
 	protected boolean[][] fetchPuzzleImage(String src) {
 		try {
 			  HttpURLConnection conn = (HttpURLConnection)new URL(src).openConnection();
-			  URLImageSource in = (URLImageSource)conn.getContent();
+			  ImageProducer in = (ImageProducer)conn.getContent();
 			  
 			  PixelGrabber pg = new PixelGrabber(in, 0, 0, -1, -1, null, 0, -1);
-			  pg.grabPixels(); //TODO: could be done async, too.
-			  int[] pixels = (int[])pg.getPixels();
+			  boolean success = pg.grabPixels(); //TODO: could be done async, too.
 			  
-			  return parseImage(pixels, pg.getWidth(), pg.getWidth(), pg.getHeight());
+			  if (success) {
+				  int[] pixels = (int[])pg.getPixels();
+				  return parseImage(pixels, pg.getWidth(), pg.getWidth(), pg.getHeight());
+			  } else {
+				  int status = pg.getStatus();
+				  return null;
+			  }
 		} catch (IOException ioe) {
 			//TODO
 		} catch (InterruptedException ie) {
@@ -342,6 +377,9 @@ public class DerStandardFetcher implements Fetcher {
 	}
 
 	private boolean[][] parseImage(int[] px, int scanSize, int pxW, int pxH) {
+		if (pxW < 15 || pxH < 15)
+			return null;
+		
 		int x=15; 
 		int y=15;
 		int c = getPixel(x, y, px, scanSize);
@@ -433,6 +471,10 @@ public class DerStandardFetcher implements Fetcher {
 		 *	int green = (pixel >>  8) & 0xff;
 		 *	int blue  = (pixel      ) & 0xff;
 		 */
+
+		if ((y*scanSize + x) >= px.length) {
+			System.out.println("gaaa");
+		}
 		
 		return px[y*scanSize + x];
 	}
@@ -449,14 +491,14 @@ public class DerStandardFetcher implements Fetcher {
 		PuzzleListEntry ple = (PuzzleListEntry)ples.get(id);
 		if (ple == null) {
 			String name = "Nr. " + id;
-			ple = new PuzzleListEntry(id, name, "derStandard.at", false, false);
+			ple = new PuzzleListEntry(id, name, "derStandard.at", false, PuzzleListEntry.NOT_DOWNLOADED, PuzzleListEntry.NOT_DOWNLOADED, PuzzleListEntry.NOT_PLAYED);
 			ples.put(id, ple);
 		} 
 		return ple;
 	}
 	
 	public static void main (String[] args) {
-//		new DerStandardFetcher().fetchAvailablePuzzleIds(null);
+		new DerStandardFetcher().fetchAvailablePuzzleIds(null);
 //		new DerStandardFetcher().fetchPuzzleImage("http://images.derstandard.at/2009/11/23/1256825543842.gif");
 		new DerStandardFetcher().fetchPuzzle("http://derstandard.at/1324410966911/Kreuzwortraetsel-Nr-6955?_lexikaGroup=1");
 	}
