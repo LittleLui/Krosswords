@@ -1,6 +1,9 @@
 package littlelui.krosswords.fetch;
 
 
+import java.awt.BorderLayout;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.awt.image.ImageProducer;
 import java.awt.image.PixelGrabber;
 import java.io.IOException;
@@ -19,6 +22,10 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
@@ -34,6 +41,8 @@ import org.xml.sax.helpers.DefaultHandler;
 //TODO: error handling, running feedback
 //TODO: close streams when done!
 public class DerStandardFetcher implements Fetcher {
+	final static boolean DEBUG_IMAGE_PARSING = false;
+	
 	private final class PuzzleProducingContentHandler extends DefaultHandler {
 		private boolean mobile = false;
 		private boolean inCopyText = false;
@@ -143,7 +152,7 @@ public class DerStandardFetcher implements Fetcher {
 			}
 			
 			else if (inCopyText) {
-				if ("img".equals(localName) && (mobile || "kreuzworträtsel".equalsIgnoreCase(attributes.getValue("alt")))) {
+				if (grid == null && "img".equals(localName) && (mobile || "kreuzworträtsel".equalsIgnoreCase(attributes.getValue("alt")))) {
 					String src = attributes.getValue("src");
 					grid = fetchPuzzleImage(src);
 				} if (primedHorizontalHints && "p".equals(localName)) {
@@ -288,15 +297,20 @@ public class DerStandardFetcher implements Fetcher {
 	
 	public Puzzle fetchPuzzle(PuzzleListEntry listEntry) {
 		try {
+			listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOADING);
+
 			Puzzle p = fetchPuzzle(listEntry.getAttribute("puzzle-url"));
 			
 			if (p != null) {
 				listEntry.setPuzzle(p);
 				listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOADED);
+			} else {
+				listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
 			}
 			
 			return p;
 		} catch (Throwable t) {
+			listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
 			System.out.println(t);
 			t.printStackTrace();
 			return null;
@@ -380,7 +394,7 @@ public class DerStandardFetcher implements Fetcher {
 		if (pxW < 15 || pxH < 15)
 			return null;
 		
-		int x=15; 
+		int x=0; 
 		int y=15;
 		int c = getPixel(x, y, px, scanSize);
 		
@@ -398,7 +412,7 @@ public class DerStandardFetcher implements Fetcher {
 		
 		int firstBlackX = x;
 		
-		int fieldWidth = firstBlackX - firstWhiteX + 1; //simple substraction would yield only the width of the white, but the black line is also part of it... but TODO: the line being 1px is an assumption that is probably invalid.
+		int fieldWidth = detectFieldWidth(firstWhiteX, firstBlackX, px, scanSize, pxW, pxH);
 		
 		//go to the center of the white square
 		x = x - fieldWidth/2;
@@ -420,12 +434,12 @@ public class DerStandardFetcher implements Fetcher {
 		
 		int firstBlackY = y;
 		
-		int fieldHeight = firstBlackY - firstWhiteY + 1; //TODO: see above.
+		int fieldHeight = detectFieldHeight(firstWhiteY, firstBlackY, px, scanSize, pxW, pxH);
 		
 		
 		//now we have the field dimensions, we can send our probes.
-		int w = pxW / fieldWidth;
-		int h = pxH / fieldHeight;
+		int w = (pxW / fieldWidth);
+		int h = (pxH / fieldHeight);
 		
 		boolean[][] retVal = logicallyParseImage(px, scanSize, fieldWidth, fieldHeight, w, h);
 		
@@ -433,22 +447,85 @@ public class DerStandardFetcher implements Fetcher {
 	}
 
 
-	private boolean[][] logicallyParseImage(int[] px, int scanSize, int fieldWidth, int fieldHeight, int w, int h) {
+	private int detectFieldWidth(int firstWhiteX, int firstBlackX, int[] px, int scanSize, int pxW, int pxH) {
+		int y = 15;
+		
+		for (;y<pxH; y+=10) {
+			for (int dx = 1; dx <= 20; dx++) {
+				if (isWhite(getPixel(firstBlackX + dx, y, px, scanSize))) {
+					int whiteAgain = firstBlackX + dx;
+					return whiteAgain - firstWhiteX;
+				}
+			}
+		}
+
+		return firstBlackX - firstWhiteX + 2; //assumption: two pixels line
+	}
+	
+	private int detectFieldHeight(int firstWhiteY, int firstBlackY, int[] px, int scanSize, int pxW, int pxH) {
+		int x = 15;
+		
+		for (;x<pxW; x+=10) {
+			for (int dy = 1; dy <= 20; dy++) {
+				if (isWhite(getPixel(x, firstBlackY + dy, px, scanSize))) {
+					int whiteAgain = firstBlackY + dy;
+					return whiteAgain - firstWhiteY - 1;
+				}
+			}
+		}
+
+		return firstBlackY - firstWhiteY + 2; //assumption: two pixels line
+	}
+	private boolean[][] logicallyParseImage(int[] px, int scanSize, int fieldWidth, int fieldHeight, final int w, final int h) {
+		final BufferedImage bi = DEBUG_IMAGE_PARSING ? new BufferedImage(scanSize, px.length/scanSize, BufferedImage.TYPE_INT_RGB) : null;
+		
+		if (DEBUG_IMAGE_PARSING)
+		  bi.setRGB(0, 0, scanSize, px.length/scanSize, px, 0, scanSize);
+		
+		
 		int c;
 		boolean[][] retVal = new boolean[w][h];
 		for (int yy = 0; yy<h; yy++) {
 			for (int xx = 0; xx<w; xx++) {
-				if (xx == 5 && yy == 11) {
-					System.out.println("ha");
-				}
 				int pixX = fieldWidth/2 + xx * fieldWidth;
 				int pixY = fieldHeight/2 + yy * fieldHeight;
 				
 				retVal[xx][yy] = isLogicallyWhite(pixX, pixY, px, scanSize);
-				
-
+				if (DEBUG_IMAGE_PARSING) {
+					try {
+						bi.setRGB(pixX-1, pixY-1, 0x00FF0000);
+						bi.setRGB(pixX-1, pixY, 0x00FF0000);
+						bi.setRGB(pixX-1, pixY+1, 0x00FF0000);
+						bi.setRGB(pixX, pixY-1, 0x00FF0000);
+						bi.setRGB(pixX, pixY, 0x00FF0000);
+						bi.setRGB(pixX, pixY+1, 0x00FF0000);
+						bi.setRGB(pixX+1, pixY-1, 0x00FF0000);
+						bi.setRGB(pixX+1, pixY, 0x00FF0000);
+						bi.setRGB(pixX+1, pixY+1, 0x00FF0000);
+					} catch (Exception e) {}
+				}
 			}
 		}
+		
+		if (DEBUG_IMAGE_PARSING) {
+			JFrame jf = new JFrame() {
+				JPanel jp = new JPanel() {
+					public void paintComponent(Graphics g) {
+						g.drawImage(bi, 0, 0, this);
+					}
+				};
+
+				{
+					setLayout(new BorderLayout());
+					add(jp, BorderLayout.CENTER);
+				}
+			};
+			
+			jf.setSize(900, 900);
+			jf.setVisible(true);
+		}
+		
+		
 		return retVal;
 	}
 
@@ -498,9 +575,14 @@ public class DerStandardFetcher implements Fetcher {
 	}
 	
 	public static void main (String[] args) {
-		new DerStandardFetcher().fetchAvailablePuzzleIds(null);
+		DerStandardFetcher dsf = new DerStandardFetcher();
+		
+		List ids = dsf.fetchAvailablePuzzleIds(null);
+		Puzzle p = dsf.fetchPuzzle((PuzzleListEntry)ids.get(0));
+		
+//		new DerStandardFetcher().fetchAvailablePuzzleIds(null);
 //		new DerStandardFetcher().fetchPuzzleImage("http://images.derstandard.at/2009/11/23/1256825543842.gif");
-		new DerStandardFetcher().fetchPuzzle("http://derstandard.at/1324410966911/Kreuzwortraetsel-Nr-6955?_lexikaGroup=1");
+//		new DerStandardFetcher().fetchPuzzle("http://derstandard.at/1324410966911/Kreuzwortraetsel-Nr-6955?_lexikaGroup=1");
 	}
 
 }

@@ -14,14 +14,14 @@ import littlelui.krosswords.catalog.PuzzleListEntry.Listener;
 public class PuzzleListEntryPanel extends JPanel {
 	private PuzzleListEntry entry;
 
-	private Font F_TITLE = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
-	private Font F_SMALL = new Font(Font.SANS_SERIF, Font.PLAIN, 15);
+	private Font F_TITLE = new Font(Font.SANS_SERIF, Font.PLAIN, 22);
+	private Font F_SMALL = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
 	
 	public PuzzleListEntryPanel(PuzzleListEntry entry) {
 		super();
 		this.entry = entry;
 		
-		setLayout(new BorderLayout(2, 4));
+		setLayout(new BorderLayout(8, 6));
 		setBorder(BorderFactory.createMatteBorder(1, 0, 1,0,Color.DARK_GRAY));
 		
 		final JLabel lTitle = new JLabel(entry.getName());
@@ -33,6 +33,8 @@ public class PuzzleListEntryPanel extends JPanel {
 				lTitle.setText(ple.getName());
 				lOrigin.setText(ple.getProvider());
 				lSummary.setText(summarize(ple));
+				validate();
+				repaint();
 			}
 		});
 		
