@@ -1,5 +1,9 @@
 package littlelui.krosswords.catalog;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import littlelui.krosswords.Main;
 import littlelui.krosswords.model.Puzzle;
 
 public final class PuzzleListEntry implements Serializable {
@@ -73,6 +78,7 @@ public final class PuzzleListEntry implements Serializable {
 
 	public void setSolutionAvailable(boolean solutionAvailable) {
 		this.solutionAvailable = solutionAvailable;
+		persist();
 		fireChange();
 	}
 
@@ -82,6 +88,10 @@ public final class PuzzleListEntry implements Serializable {
 
 	public void setPuzzleDownloadState(int puzzleDownloadState) {
 		this.puzzleDownloadState = puzzleDownloadState;
+		
+		if (puzzleDownloadState != DOWNLOADING)
+			persist();
+		
 		fireChange();
 	}
 
@@ -91,6 +101,10 @@ public final class PuzzleListEntry implements Serializable {
 
 	public void setSolutionDownloadState(int solutionDownloadState) {
 		this.solutionDownloadState = solutionDownloadState;
+		
+		if (puzzleDownloadState != DOWNLOADING)
+			persist();
+		
 		fireChange();
 	}
 
@@ -100,6 +114,7 @@ public final class PuzzleListEntry implements Serializable {
 
 	public void setPuzzleSolutionState(int puzzleSolutionState) {
 		this.puzzleSolutionState = puzzleSolutionState;
+		persist();
 		fireChange();
 	}
 
@@ -119,6 +134,7 @@ public final class PuzzleListEntry implements Serializable {
 
 	public void setPuzzle(Puzzle puzzle) {
 		this.puzzle = puzzle;
+		persist();
 	}
 
 
@@ -144,6 +160,26 @@ public final class PuzzleListEntry implements Serializable {
 		Iterator i = listeners.iterator();
 		while (i.hasNext()) {
 			((Listener)i.next()).changed(this);
+		}
+	}
+
+	private synchronized void persist() {
+		Main m = Main.getInstance();
+		
+		File f = new File(m.getCatalogDir(), provider+"_"+id+".puzzle");
+		ObjectOutputStream oos = null;
+		try {
+			FileOutputStream fos = new FileOutputStream(f);
+			oos = new ObjectOutputStream(fos);
+			oos.writeObject(this);
+		} catch (IOException ioe) {
+			//TODO: what to do?
+		} finally {
+			if (oos != null) try {
+				oos.close();
+			} catch (IOException ioe) {
+				//really, nothing to do here
+			}
 		}
 	}
 

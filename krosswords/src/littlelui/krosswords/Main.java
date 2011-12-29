@@ -25,6 +25,8 @@ import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
 
 public class Main extends AbstractKindlet {
+	
+		private static Main instance;
         
         private KindletContext ctx;
         private File stateDir;
@@ -32,7 +34,16 @@ public class Main extends AbstractKindlet {
         
         private Puzzle model;
 
-        public void create(KindletContext context) {
+        public Main() {
+			super();
+			instance = this;
+		}
+        
+        public static Main getInstance() {
+        	return instance;
+        }
+
+		public void create(KindletContext context) {
                 this.ctx = context;
     			stateDir = ctx.getHomeDirectory();
     			catalogDir = new File(stateDir, "catalog");
@@ -93,7 +104,12 @@ public class Main extends AbstractKindlet {
 		c.removeAll();
 		c.add(new CatalogPanel(this, ctx, catalogDir));
 	}
-		
+
+	public File getCatalogDir() {
+		return catalogDir;
+	}
+	
+	
 		
 
 }
