@@ -23,6 +23,7 @@ import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
+import com.sun.org.apache.xerces.internal.impl.dv.ValidatedInfo;
 
 public class Main extends AbstractKindlet {
 	
@@ -89,6 +90,9 @@ public class Main extends AbstractKindlet {
 		Container c = ctx.getRootContainer();
 		c.removeAll();
 		c.add(new PuzzlePanel(puzzle, ctx));
+		
+		c.validate(); 
+		c.repaint();
 		
 //		//load solution state of the panel
 //		try {
