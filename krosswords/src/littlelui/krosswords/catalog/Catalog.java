@@ -23,10 +23,14 @@ public class Catalog {
 		super();
 		this.catalogDir = catalogDir;
 
-		loadEntriesFromDisk();
+		new Thread() {
+			public void run() {
+				loadEntriesFromDisk();
+			}
+		}.start();
 	}
 	
-	//threadsafe because called from constructor.
+	//threadsafe because it uses add() for manipulation
 	private void loadEntriesFromDisk() {
 		File[] files = catalogDir.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
@@ -38,7 +42,7 @@ public class Catalog {
 			File f = files[i];
 			try {
 				PuzzleListEntry p = PuzzleListEntry.unpersist(f);
-				entries.add(p);
+				add(p);
 			} catch (Exception e) {
 				Main.getInstance().logError("Unable to unpersist file "+f.getAbsolutePath(), e);
 			}
@@ -63,11 +67,15 @@ public class Catalog {
 		Iterator i = ples.iterator();
 		while (i.hasNext()) {
 			PuzzleListEntry ple = (PuzzleListEntry) i.next();
-			boolean c = entries.add(ple);
-			if (c) {
-				int index = getEntries().indexOf(ple);
-				fireAdded(ple, index);
-			}
+			add(ple);
+		}
+	}
+
+	private synchronized void add(PuzzleListEntry ple) {
+		boolean c = entries.add(ple);
+		if (c) {
+			int index = getEntries().indexOf(ple);
+			fireAdded(ple, index);
 		}
 	}
 

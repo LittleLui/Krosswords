@@ -37,7 +37,9 @@ public class DownloadManager implements ConnectivityHandler {
 		this.connectivity = connectivity;
 		this.ctx = ctx;
 		this.catalog = catalog;
-		
+	}
+	
+	public void start() {
 		if (connectivity.isConnected()) {
 			requestConnectionIfWorkToDo();
 		}

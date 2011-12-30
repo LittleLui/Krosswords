@@ -18,8 +18,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -249,6 +252,14 @@ public class DerStandardFetcher implements Fetcher {
 	
 	public Collection fetchAvailablePuzzleIds(Collection/*<PuzzleListEntry>*/ known) {
 		final Map /*<String, PuzzleListEntry>*/ ples = new HashMap();
+
+		Iterator i = known.iterator();
+		while (i.hasNext()) {
+			PuzzleListEntry ple = (PuzzleListEntry)i.next();
+			ples.put(ple.getId(), ple);
+		}
+		
+		
 		
 		InputSource is = null;
 		try {
@@ -295,7 +306,11 @@ public class DerStandardFetcher implements Fetcher {
 			} catch (Exception e) {} //fair to ignore exceptions when closing
 		}
 		
-		return new ArrayList(ples.values());
+		
+		Set r = new HashSet(ples.values());
+		r.removeAll(known);
+		
+		return r;
 	}
 	
 	

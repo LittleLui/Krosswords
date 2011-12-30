@@ -50,7 +50,13 @@ public class Main extends AbstractKindlet {
     			catalogDir.mkdirs();
                 
     			catalog = new Catalog(catalogDir);
-    			dm = new DownloadManager(ctx.getConnectivity(), ctx, catalog);
+    			
+    			try {
+    				dm = new DownloadManager(ctx.getConnectivity(), ctx, catalog);
+    			} catch (Throwable t) {
+    				t.printStackTrace();
+    				System.out.println(t);
+    			}
                 //this crashed the thing.. damnit
 //                ((StandardKindletContext)ctx).getToolbar().setToolbarStyle(ToolbarStyle.TOOLBAR_TRANSIENT);
         }
@@ -63,6 +69,8 @@ public class Main extends AbstractKindlet {
 			} else {
 //				navigateToPuzzle(lastOpenPuzzle);
 			}
+			
+			dm.start();
     			
 			//TODO: find last panel we worked on and load it, then we can
     		
