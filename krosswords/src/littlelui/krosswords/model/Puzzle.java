@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import littlelui.krosswords.Main;
+
 public class Puzzle implements Serializable {
 	private int width;
 	private int height;
@@ -53,32 +55,20 @@ public class Puzzle implements Serializable {
 		return words;
 	}
 
-	public void saveSolutionState(File dir) throws IOException {
-		File f = new File(dir, "example.state");
-		FileOutputStream fos = new FileOutputStream(f);
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		
+	public void saveSolutionState(ObjectOutputStream oos) throws IOException {
 		for (int i=0; i<words.size(); i++) {
 			oos.writeObject(((Word)words.get(i)).getSolution());
 		}
-		
-		oos.close();
 	}
 	
-	public void loadSolutionState(File dir) throws IOException {
-		File f = new File(dir, "example.state");
-		FileInputStream fis = new FileInputStream(f);
-		ObjectInputStream ois = new ObjectInputStream(fis);
-		
+	public void loadSolutionState(ObjectInputStream ois) {
 		try {
 			for (int i=0; i<words.size(); i++) {
 				String s = (String)ois.readObject();
 				((Word)words.get(i)).setSolution(s);
 			}
-		} catch (ClassNotFoundException cnfe) {
-			throw new IOException(cnfe);
-		} finally {
-			ois.close();
+		} catch (Exception ioe) {
+			//whatever goes wrong (probably just: no solution state), it's fine with me.
 		}
 	}
 	

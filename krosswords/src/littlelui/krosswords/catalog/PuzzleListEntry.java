@@ -1,10 +1,14 @@
 package littlelui.krosswords.catalog;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,6 +37,8 @@ public final class PuzzleListEntry implements Serializable {
 	private int solutionDownloadState;
 	private int puzzleSolutionState;
 	
+	private Date lastPlayed;
+	
 	private Puzzle puzzle;
 
 	private Map attributes = new HashMap();
@@ -48,6 +54,7 @@ public final class PuzzleListEntry implements Serializable {
 		this.puzzleDownloadState = puzzleDownloadState;
 		this.solutionDownloadState = solutionDownloadState;
 		this.puzzleSolutionState = puzzleSolutionState;
+		persist();
 	}
 	
 	public String getId() {
@@ -73,6 +80,19 @@ public final class PuzzleListEntry implements Serializable {
 
 	public void setProvider(String provider) {
 		this.provider = provider;
+		fireChange();
+	}
+
+	public Date getLastPlayed() {
+		return lastPlayed;
+	}
+
+	public void setLastPlayed(Date lastPlayed) {
+		this.lastPlayed = lastPlayed;
+		if (this.puzzleSolutionState == NOT_PLAYED) {
+			this.puzzleSolutionState = IN_PROGRESS;
+		}
+		persist();
 		fireChange();
 	}
 
@@ -172,6 +192,8 @@ public final class PuzzleListEntry implements Serializable {
 			FileOutputStream fos = new FileOutputStream(f);
 			oos = new ObjectOutputStream(fos);
 			oos.writeObject(this);
+			if (puzzle != null)
+				puzzle.saveSolutionState(oos);
 		} catch (IOException ioe) {
 			System.out.println(ioe);
 			//TODO: what to do?
@@ -183,6 +205,17 @@ public final class PuzzleListEntry implements Serializable {
 			}
 		}
 	}
+	
+
+	public static PuzzleListEntry unpersist(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
+		FileInputStream fis = new FileInputStream(f);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		PuzzleListEntry p = (PuzzleListEntry)ois.readObject();
+		if (p.getPuzzle() != null)
+			p.getPuzzle().loadSolutionState(ois);
+		return p;
+	}
+
 
 	public interface Listener {
 		public void changed(PuzzleListEntry ple);

@@ -5,6 +5,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -82,18 +83,6 @@ public class CatalogPanel extends KPages {
 					r.add(ple);
 					
 					addItem(createItemPanel(ple)); 
-					
-					
-					
-					try {
-						File f = new File(catalogDir, ple.getFileName());
-						FileOutputStream fos = new FileOutputStream(f);
-						ObjectOutputStream oos = new ObjectOutputStream(fos);
-						oos.writeObject(ple);
-						oos.close();
-					} catch (IOException ioe) {
-						//TODO
-					}
 				}
 				validate();
 			} catch (Throwable t) {
@@ -105,9 +94,8 @@ public class CatalogPanel extends KPages {
 			for (int i=0; i<files.length; i++) {
 				File f = files[i];
 				try {
-					FileInputStream fis = new FileInputStream(f);
-					ObjectInputStream ois = new ObjectInputStream(fis);
-					PuzzleListEntry p = (PuzzleListEntry)ois.readObject();
+					PuzzleListEntry p = PuzzleListEntry.unpersist(f);
+
 					puzzles.add(p);
 				} catch (IOException e) {
 					//TODO
@@ -132,6 +120,7 @@ public class CatalogPanel extends KPages {
 	}
 
 
+
 	private JComponent createItemPanel(final PuzzleListEntry ple) {
 		PuzzleListEntryPanel plep = new PuzzleListEntryPanel(ple);
 		plep.addMouseListener(new GestureDispatcher());
@@ -140,7 +129,7 @@ public class CatalogPanel extends KPages {
 				Puzzle p = ple.getPuzzle();
 				
 				if (p != null)
-					main.navigateToPuzzle(p);
+					main.navigateToPuzzle(ple);
 			}
 		});
 		

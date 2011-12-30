@@ -10,20 +10,16 @@ package littlelui.krosswords;
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
  *  
  */
-import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.FlowLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
-import javax.swing.JPanel;
-
+import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.model.Puzzle;
-import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
-import com.sun.org.apache.xerces.internal.impl.dv.ValidatedInfo;
 
 public class Main extends AbstractKindlet {
 	
@@ -33,7 +29,7 @@ public class Main extends AbstractKindlet {
         private File stateDir;
         private File catalogDir;
         
-        private Puzzle model;
+        private PuzzleListEntry model;
 
         public Main() {
 			super();
@@ -77,16 +73,20 @@ public class Main extends AbstractKindlet {
 	public void stop() {
 		File dir = ctx.getHomeDirectory();
 		// save solution state of the panel
-		try {
-			if (model != null)
-				model.saveSolutionState(dir);
-		} catch (IOException ioe) {
-			// TODO: log?
+		if (model != null) {
+			model.setLastPlayed(new Date());
 		}
 		// TODO: save panel's uri so we can re-open it when we open again
 	}		
 	
-	public void navigateToPuzzle(Puzzle puzzle) {
+	public void navigateToPuzzle(PuzzleListEntry ple) {
+		Puzzle puzzle = ple.getPuzzle();
+		
+		if (puzzle == null)
+			return;
+		
+		this.model = ple;
+		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
 		c.add(new PuzzlePanel(puzzle, ctx));
@@ -104,6 +104,9 @@ public class Main extends AbstractKindlet {
 	}
 		
 	public void navigateToCatalog() {
+		if (this.model != null)
+			this.model.setLastPlayed(new Date());
+		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
 		c.add(new CatalogPanel(this, ctx, catalogDir));
