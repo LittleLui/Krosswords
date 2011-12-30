@@ -230,7 +230,7 @@ public class DerStandardFetcher implements Fetcher {
 
 	}
 
-	private final String URL_INDEX = "http://mobil.derstandard.at/r1256744634465/Kreuzwortraetsel";
+	private final String URL_INDEX = "http://derstandard.at/r1256744634465/Kreuzwortraetsel";
 	
 	private static final String P_ID_FROM_HREF = "[A-Za-z\\-]+([0-9]+)";
 	private static final String P_HINT= "([0-9]+)([^_]+)___";
@@ -347,7 +347,11 @@ public class DerStandardFetcher implements Fetcher {
 
 	private InputSource fetchViaHttp(String url) throws IOException, MalformedURLException, UnsupportedEncodingException {
 		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-		Map m = conn.getRequestProperties();
+		
+		//so we don't neccessarily get the mobile version 
+		conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.0; rv:8.0) Gecko/20100101 Firefox/8.0");
+		conn.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+		
 
 		InputStream in = (InputStream) conn.getContent();
 		String encoding = conn.getContentEncoding();
