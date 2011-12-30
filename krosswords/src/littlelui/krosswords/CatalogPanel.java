@@ -1,19 +1,14 @@
 package littlelui.krosswords;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -89,7 +84,7 @@ public class CatalogPanel extends KPages {
 				System.out.println(t);
 			}
 		} else {
-			final List puzzles = new LinkedList();
+			final SortedSet puzzles = new TreeSet();
 			
 			for (int i=0; i<files.length; i++) {
 				File f = files[i];
@@ -98,6 +93,7 @@ public class CatalogPanel extends KPages {
 
 					puzzles.add(p);
 				} catch (IOException e) {
+					System.out.println(e);
 					//TODO
 				} catch (ClassNotFoundException cnfe) {
 					//TODO

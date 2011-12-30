@@ -18,7 +18,7 @@ import java.util.Map;
 import littlelui.krosswords.Main;
 import littlelui.krosswords.model.Puzzle;
 
-public final class PuzzleListEntry implements Serializable {
+public final class PuzzleListEntry implements Serializable, Comparable {
 	public static final int NOT_DOWNLOADED = 0;
 	public static final int DOWNLOADING = 1;
 	public static final int DOWNLOADED = 2;
@@ -225,5 +225,98 @@ public final class PuzzleListEntry implements Serializable {
 		return getProvider()+"___"+getId()+".puzzle";
 	}
 
+	public int compareTo(Object o) {
+		PuzzleListEntry other = (PuzzleListEntry)o;
+		
+		if (this.puzzleSolutionState == IN_PROGRESS && other.puzzleSolutionState != IN_PROGRESS)
+			return -1;
+		
+		if (this.puzzleSolutionState != IN_PROGRESS && other.puzzleSolutionState == IN_PROGRESS)
+			return 1;
+		
+		if (this.puzzleSolutionState == IN_PROGRESS && other.puzzleSolutionState == IN_PROGRESS) {
+			if (other.lastPlayed != null && lastPlayed != null)
+				return other.lastPlayed.compareTo(this.lastPlayed);
+		}
+		
+		int r = other.id.compareTo(id);
+		
+		if (r != 0)
+			return r;
+		
+		return System.identityHashCode(this) - System.identityHashCode(other);
+	}
+
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((lastPlayed == null) ? 0 : lastPlayed.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((provider == null) ? 0 : provider.hashCode());
+		result = prime * result + ((puzzle == null) ? 0 : puzzle.hashCode());
+		result = prime * result + puzzleDownloadState;
+		result = prime * result + puzzleSolutionState;
+		result = prime * result + (solutionAvailable ? 1231 : 1237);
+		result = prime * result + solutionDownloadState;
+		return result;
+	}
+
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PuzzleListEntry other = (PuzzleListEntry) obj;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (lastPlayed == null) {
+			if (other.lastPlayed != null)
+				return false;
+		} else if (!lastPlayed.equals(other.lastPlayed))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (provider == null) {
+			if (other.provider != null)
+				return false;
+		} else if (!provider.equals(other.provider))
+			return false;
+		if (puzzle == null) {
+			if (other.puzzle != null)
+				return false;
+		} else if (!puzzle.equals(other.puzzle))
+			return false;
+		if (puzzleDownloadState != other.puzzleDownloadState)
+			return false;
+		if (puzzleSolutionState != other.puzzleSolutionState)
+			return false;
+		if (solutionAvailable != other.solutionAvailable)
+			return false;
+		if (solutionDownloadState != other.solutionDownloadState)
+			return false;
+		return true;
+	}
+
+	
+	
+	
 
 }
