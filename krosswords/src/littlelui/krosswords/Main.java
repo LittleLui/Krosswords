@@ -4,22 +4,21 @@ package littlelui.krosswords;
  * 
  *  - toolbar ausblenden
  *  
- *  - kreuzworträtsel automatisch von derstandard.at laden
- *  - zwischen rätseln wechseln usw...
- *  - zwischenstand speichern und laden muss noch auf wechselnde rätsel angepasst werden
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
  *  
  */
 import java.awt.Container;
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 
+import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.PuzzleListEntry;
+import littlelui.krosswords.fetch.DownloadManager;
 import littlelui.krosswords.model.Puzzle;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
+import com.sun.xml.internal.bind.v2.TODO;
 
 public class Main extends AbstractKindlet {
 	
@@ -29,7 +28,10 @@ public class Main extends AbstractKindlet {
         private File stateDir;
         private File catalogDir;
         
-        private PuzzleListEntry model;
+        private PuzzleListEntry currentlyPlaying;
+        
+        private Catalog catalog;
+        private DownloadManager dm;
 
         public Main() {
 			super();
@@ -47,6 +49,8 @@ public class Main extends AbstractKindlet {
     			
     			catalogDir.mkdirs();
                 
+    			catalog = new Catalog(catalogDir);
+    			dm = new DownloadManager(ctx.getConnectivity(), ctx, catalog);
                 //this crashed the thing.. damnit
 //                ((StandardKindletContext)ctx).getToolbar().setToolbarStyle(ToolbarStyle.TOOLBAR_TRANSIENT);
         }
@@ -57,7 +61,7 @@ public class Main extends AbstractKindlet {
 			if (lastOpenPuzzle == null) {
 				navigateToCatalog();
 			} else {
-//				navigateToPuzzle(puzzle);
+//				navigateToPuzzle(lastOpenPuzzle);
 			}
     			
 			//TODO: find last panel we worked on and load it, then we can
@@ -73,8 +77,8 @@ public class Main extends AbstractKindlet {
 	public void stop() {
 		File dir = ctx.getHomeDirectory();
 		// save solution state of the panel
-		if (model != null) {
-			model.setLastPlayed(new Date());
+		if (currentlyPlaying != null) {
+			currentlyPlaying.setLastPlayed(new Date());
 		}
 		// TODO: save panel's uri so we can re-open it when we open again
 	}		
@@ -85,7 +89,7 @@ public class Main extends AbstractKindlet {
 		if (puzzle == null)
 			return;
 		
-		this.model = ple;
+		this.currentlyPlaying = ple;
 		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
@@ -104,16 +108,21 @@ public class Main extends AbstractKindlet {
 	}
 		
 	public void navigateToCatalog() {
-		if (this.model != null)
-			this.model.setLastPlayed(new Date());
+		if (this.currentlyPlaying != null)
+			this.currentlyPlaying.setLastPlayed(new Date());
 		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
-		c.add(new CatalogPanel(this, ctx, catalogDir));
+		c.add(new CatalogPanel(this, ctx, catalog));
 	}
 
 	public File getCatalogDir() {
 		return catalogDir;
+	}
+
+	public void logError(String string, Exception e) {
+//		 TODO Auto-generated method stub
+		
 	}
 	
 	

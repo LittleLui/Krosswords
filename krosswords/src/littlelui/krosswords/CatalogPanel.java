@@ -1,21 +1,15 @@
 package littlelui.krosswords;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 
+import littlelui.krosswords.catalog.Catalog;
+import littlelui.krosswords.catalog.CatalogListener;
 import littlelui.krosswords.catalog.PuzzleListEntry;
-import littlelui.krosswords.fetch.DerStandardFetcher;
 import littlelui.krosswords.model.Puzzle;
 
 import com.amazon.kindle.kindlet.KindletContext;
@@ -24,98 +18,28 @@ import com.amazon.kindle.kindlet.input.Gestures;
 import com.amazon.kindle.kindlet.ui.KPages;
 import com.amazon.kindle.kindlet.ui.pages.PageProviders;
 
-public class CatalogPanel extends KPages {
-	private File catalogDir;
-	private DerStandardFetcher dsf = new DerStandardFetcher();
+public class CatalogPanel extends KPages implements CatalogListener {
 	
-	private Main main;
+	private final Main main;
+	private final Catalog catalog;
 
 	
-	public CatalogPanel(Main main, KindletContext ctx, File catalogDir) {
+	public CatalogPanel(Main main, KindletContext ctx, Catalog catalog) {
         super(PageProviders.createBoxLayoutProvider(BoxLayout.Y_AXIS));
         this.main = main;
-		this.catalogDir = catalogDir;
+        this.catalog = catalog;
+        
+        catalog.addListener(this);
 		
-		new Thread() {
-			public void run() {
-				List/*<PuzzleListEntry>*/ ples = loadFromDiskOrNetwork(); 
-				
-				Iterator i = ples.iterator();
-				while (i.hasNext()) {
-					PuzzleListEntry ple = (PuzzleListEntry)i.next();
-					
-					if (ple.getPuzzleDownloadState() != PuzzleListEntry.DOWNLOADED) {
-						Puzzle p = dsf.fetchPuzzle(ple);
-					}
-					
-					//TODO: also download solutions
-				}
-			}
-		}.start();
-		
-		
+        Iterator i = catalog.getEntries().iterator();
+        while (i.hasNext()) {
+        	PuzzleListEntry ple = (PuzzleListEntry)i.next();
+        	addItem(createItemPanel(ple));
+        }
 	}
 
 
-	//TODO: this should also look on the net (after a day or so) even if files exist so the list gets longer (and also a solution might have been added to a recent puzzle)
-	public List /*<PuzzleListEntry>*/ loadFromDiskOrNetwork() {
-		List r = new LinkedList();
-		
-		File[] files = catalogDir.listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".puzzle");
-			}
-		});
-		
-		
-		
-		if (files.length == 0) {
-			try {
-				List puzzleIds = dsf.fetchAvailablePuzzleIds(null);
-				Iterator iPLEs = puzzleIds.iterator();
-				while (iPLEs.hasNext()) {
-					final PuzzleListEntry ple = (PuzzleListEntry)iPLEs.next();
-					r.add(ple);
-					
-					addItem(createItemPanel(ple)); 
-				}
-				validate();
-			} catch (Throwable t) {
-				System.out.println(t);
-			}
-		} else {
-			final SortedSet puzzles = new TreeSet();
-			
-			for (int i=0; i<files.length; i++) {
-				File f = files[i];
-				try {
-					PuzzleListEntry p = PuzzleListEntry.unpersist(f);
-
-					puzzles.add(p);
-				} catch (IOException e) {
-					System.out.println(e);
-					//TODO
-				} catch (ClassNotFoundException cnfe) {
-					//TODO
-				}
-			}
-			
-			r.addAll(puzzles);
-			
-			removeAllItems(); //TODO KPaged
-			Iterator iPuzzles = puzzles.iterator();
-			while (iPuzzles.hasNext()) {
-				PuzzleListEntry p = (PuzzleListEntry)iPuzzles.next();
-				addItem(createItemPanel(p)); //TODO KPaged
-			}
-			validate(); 
-
-		}		
-
-		return r;
-	}
-
-
+	
 
 	private JComponent createItemPanel(final PuzzleListEntry ple) {
 		PuzzleListEntryPanel plep = new PuzzleListEntryPanel(ple);
@@ -130,5 +54,12 @@ public class CatalogPanel extends KPages {
 		});
 		
 		return plep;
+	}
+
+
+
+
+	public void entryAdded(PuzzleListEntry entry, int index) {
+		addItem(createItemPanel(entry), index);
 	}
 }

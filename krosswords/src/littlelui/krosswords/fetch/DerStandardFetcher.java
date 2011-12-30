@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +24,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import littlelui.krosswords.Main;
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
@@ -37,7 +38,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-//TODO: respect encoding! (hints have broken umlauts)
 //TODO: error handling, running feedback
 //TODO: close streams when done!
 public class DerStandardFetcher implements Fetcher {
@@ -246,11 +246,13 @@ public class DerStandardFetcher implements Fetcher {
 		
 		return null;
 	}
-	public List fetchAvailablePuzzleIds(FetchCallback listener) {
+	
+	public Collection fetchAvailablePuzzleIds(Collection/*<PuzzleListEntry>*/ known) {
 		final Map /*<String, PuzzleListEntry>*/ ples = new HashMap();
 		
+		InputSource is = null;
 		try {
-		  InputSource is = fetchViaHttp(URL_INDEX);
+		  is = fetchViaHttp(URL_INDEX);
 		  Parser p = new Parser();
 		  
 		  p.setContentHandler(new DefaultHandler() {
@@ -275,8 +277,6 @@ public class DerStandardFetcher implements Fetcher {
 								ple.setAttribute("puzzle-url", "http://derstandard.at"+href);
 								
 							}
-						} else  {
-							System.out.println(href);
 						}
 					}
 				}
@@ -286,38 +286,25 @@ public class DerStandardFetcher implements Fetcher {
 		  
 		  p.parse(is);
 		} catch (IOException ioe) {
-			//TODO
+			Main.getInstance().logError("Unable to update list from derstandard.at", ioe);
 		} catch (SAXException se) {
-			//TODO
+			Main.getInstance().logError("Unable to update list from derstandard.at", se);
+		} finally {
+			if (is != null) try {
+				is.getCharacterStream().close();
+			} catch (Exception e) {} //fair to ignore exceptions when closing
 		}
 		
 		return new ArrayList(ples.values());
 	}
 	
 	
-	public Puzzle fetchPuzzle(PuzzleListEntry listEntry) {
-		try {
-			listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOADING);
-
-			Puzzle p = fetchPuzzle(listEntry.getAttribute("puzzle-url"));
-			
-			if (p != null) {
-				listEntry.setPuzzle(p);
-				listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOADED);
-			} else {
-				listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
-			}
-			
-			return p;
-		} catch (Throwable t) {
-			listEntry.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
-			System.out.println(t);
-			t.printStackTrace();
-			return null;
-		}
+	
+	public Puzzle fetchPuzzle(PuzzleListEntry listEntry) throws Exception {
+		return fetchPuzzle(listEntry.getAttribute("puzzle-url"));
 	}
 	
-	private Puzzle fetchPuzzle(String url) {
+	private Puzzle fetchPuzzle(String url) throws Exception {
 		if (url == null) 
 			return null;
 		
@@ -325,24 +312,24 @@ public class DerStandardFetcher implements Fetcher {
 			url = "http://mobile." + url.substring("http://".length());
 		}
 		
-		try { 
-			  InputSource is = fetchViaHttp(url);
-			  
-			  Parser p = new Parser();
-			  
-			  PuzzleProducingContentHandler ppch = new PuzzleProducingContentHandler();
-			  p.setContentHandler(ppch);
-
-			  p.parse(is);
-			  
-			  return ppch.getPuzzle();
-		} catch (IOException ioe) {
-			//TODO
-		} catch (SAXException se) {
-			//TODO
-		}			  
+		InputSource is = null;
 		
-		return null;
+		try {
+		  is = fetchViaHttp(url);
+		  
+		  Parser p = new Parser();
+		  
+		  PuzzleProducingContentHandler ppch = new PuzzleProducingContentHandler();
+		  p.setContentHandler(ppch);
+
+		  p.parse(is);
+		  
+		  return ppch.getPuzzle();
+		} finally {
+			if (is != null) try {
+				is.getCharacterStream().close();
+			} catch (Exception e) {} //fair to ignore exceptions when closing
+		}
 	}
 
 	private InputSource fetchViaHttp(String url) throws IOException, MalformedURLException, UnsupportedEncodingException {
@@ -561,7 +548,6 @@ public class DerStandardFetcher implements Fetcher {
 	}
 
 	private boolean isWhite(int pixel) {
-		 int alpha = (pixel >> 24) & 0xff;
 		 int red   = (pixel >> 16) & 0xff;
 		 int green = (pixel >>  8) & 0xff;
 		 int blue  = (pixel      ) & 0xff;
@@ -576,17 +562,6 @@ public class DerStandardFetcher implements Fetcher {
 			ples.put(id, ple);
 		} 
 		return ple;
-	}
-	
-	public static void main (String[] args) {
-		DerStandardFetcher dsf = new DerStandardFetcher();
-		
-		List ids = dsf.fetchAvailablePuzzleIds(null);
-		Puzzle p = dsf.fetchPuzzle((PuzzleListEntry)ids.get(0));
-		
-//		new DerStandardFetcher().fetchAvailablePuzzleIds(null);
-//		new DerStandardFetcher().fetchPuzzleImage("http://images.derstandard.at/2009/11/23/1256825543842.gif");
-//		new DerStandardFetcher().fetchPuzzle("http://derstandard.at/1324410966911/Kreuzwortraetsel-Nr-6955?_lexikaGroup=1");
 	}
 
 }
