@@ -166,13 +166,14 @@ public final class PuzzleListEntry implements Serializable {
 	private synchronized void persist() {
 		Main m = Main.getInstance();
 		
-		File f = new File(m.getCatalogDir(), provider+"_"+id+".puzzle");
+		File f = new File(m.getCatalogDir(), getFileName());
 		ObjectOutputStream oos = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(f);
 			oos = new ObjectOutputStream(fos);
 			oos.writeObject(this);
 		} catch (IOException ioe) {
+			System.out.println(ioe);
 			//TODO: what to do?
 		} finally {
 			if (oos != null) try {
@@ -185,6 +186,10 @@ public final class PuzzleListEntry implements Serializable {
 
 	public interface Listener {
 		public void changed(PuzzleListEntry ple);
+	}
+
+	public String getFileName() {
+		return getProvider()+"___"+getId()+".puzzle";
 	}
 
 

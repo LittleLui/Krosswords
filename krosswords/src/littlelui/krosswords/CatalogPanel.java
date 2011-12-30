@@ -84,7 +84,7 @@ public class CatalogPanel extends KPages {
 					
 					
 					try {
-						File f = new File(catalogDir, ple.getProvider()+"___"+ple.getId()+".puzzle");
+						File f = new File(catalogDir, ple.getFileName());
 						FileOutputStream fos = new FileOutputStream(f);
 						ObjectOutputStream oos = new ObjectOutputStream(fos);
 						oos.writeObject(ple);

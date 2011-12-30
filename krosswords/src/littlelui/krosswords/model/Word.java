@@ -1,6 +1,8 @@
 package littlelui.krosswords.model;
 
-public class Word {
+import java.io.Serializable;
+
+public class Word implements Serializable {
 	public static final int DIRECTION_HORIZONTAL = 1000;
 	public static final int DIRECTION_VERTICAL = 2000;
 	
