@@ -2,6 +2,7 @@ package littlelui.krosswords;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -20,6 +21,8 @@ public class Editor {
 	private final Word w;
 	private final Container parent;
 	private final CrosswordPanel crosswordPanel;
+	
+	private final static Insets MARGIN = new Insets(1,1,1,1);
 
 	public Editor(Word w, CrosswordPanel crosswordPanel, Container parent) {
 		this.w = w;
@@ -69,6 +72,7 @@ public class Editor {
 
 	private JTextField createTextField(String solution, final int idx) {
 		final JTextField tf = new JTextField();
+		tf.setMargin(MARGIN);
 		tf.setBackground(Color.lightGray);
 		if (solution != null && solution.length() > idx) {
 			String text = solution.substring(idx, idx+1);
@@ -79,7 +83,6 @@ public class Editor {
 		}
 		
 		tf.addKeyListener(new KeyAdapter() {
-
 			public void keyTyped(KeyEvent e) {
 				if (KeyEvent.VK_ENTER == e.getKeyCode() || '\n' == e.getKeyChar() || '\r' == e.getKeyChar()) {
 					save();
