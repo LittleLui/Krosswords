@@ -108,11 +108,11 @@ public class DownloadManager implements ConnectivityHandler {
 			}
 
 		} catch (Throwable t) {
-			ple.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			t.printStackTrace(pw);
 			ple.setAttribute("error", t.getMessage()+"\n"+sw.toString());
+			ple.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
 		}
 	}
 	

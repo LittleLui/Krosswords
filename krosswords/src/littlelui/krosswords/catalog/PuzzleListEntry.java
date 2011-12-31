@@ -144,7 +144,6 @@ public final class PuzzleListEntry implements Serializable, Comparable {
 	
 	public void setAttribute(String key, String value) {
 		attributes.put(key, value);
-		fireChange();
 	}
 	
 	

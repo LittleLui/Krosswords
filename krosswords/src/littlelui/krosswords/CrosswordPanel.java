@@ -59,8 +59,8 @@ public class CrosswordPanel extends JComponent {
 			public void actionPerformed(ActionEvent e) {
 				GestureEvent ge = (GestureEvent) e;
 				Point p = ge.getLocation();
-				int x = p.x - getBounds().x; 
-				int y = p.y - getBounds().y;
+				int x = p.x; 
+				int y = p.y;
 				
 				boolean horizontal = ge.getActionCommand().equals(Gestures.ACTION_FLICK_EAST) || ge.getActionCommand().equals(Gestures.ACTION_FLICK_WEST);
 				
@@ -203,7 +203,6 @@ public class CrosswordPanel extends JComponent {
 		
 		List/*<Word>*/ words = model.getWords();
 
-		g.setFont(keyFont);
 		Iterator i = words.iterator();
 		while (i.hasNext()) {
 			Word w = (Word)i.next();
@@ -212,19 +211,19 @@ public class CrosswordPanel extends JComponent {
 			
 			g.setColor(Color.white);
 			g.fillRect(r.x, r.y, r.width, r.height);
-			
-			g.setColor(Color.black);
-			g.drawString(w.getKey(), r.x+2, r.y+2+fmKey.getHeight());
 		}
 
 		g.setColor(Color.black);
-		g.setFont(solutionFont);
 
 		i = words.iterator();
 		while (i.hasNext()) {
 			Word w = (Word)i.next();
 			Rectangle r = getWordRectangle(w);
 			
+			g.setFont(keyFont);
+			g.drawString(w.getKey(), r.x+2, r.y+2+fmKey.getHeight());
+
+			g.setFont(solutionFont);
 			String s = w.getSolution();
 			paintString(g, fmSol, w, r, s);
 		}

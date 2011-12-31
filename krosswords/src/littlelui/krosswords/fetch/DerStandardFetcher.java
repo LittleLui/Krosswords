@@ -66,13 +66,72 @@ public class DerStandardFetcher implements Fetcher {
 		public void endDocument() {
 			if (grid != null) {
 			  Puzzle pz = new Puzzle(grid.length, grid[0].length);
-			  makeWordsHorizontal(grid, horizontalHints, pz);
-			  makeWordsVertical(grid, verticalHints, pz);
+			  makeWordsAnyDirection(grid, horizontalHints, verticalHints, pz);
+//			  makeWordsHorizontal(grid, horizontalHints, pz);
+//			  makeWordsVertical(grid, verticalHints, pz);
 			  this.puzzle = pz;
 			} else {
 				System.out.println("grid fail");
 			}
 		  }
+
+		private void makeWordsAnyDirection(boolean[][] g, Map h, Map v, Puzzle pz) {
+			int wordCount=0;
+			for (int y=0; y<g[0].length; y++) {
+				for (int x=0; x<g.length; x++) {
+					boolean startH = horizontalWordStartsAt(x, y, g);
+					boolean startV = verticalWordStartsAt(x, y, g);
+					
+					if (startH || startV)
+						++wordCount;
+					
+					if(startH) {
+						int length = getRunLength(x, y, 1, 0, g);
+						createWordByKey(h, pz, ""+wordCount, x, y, length, Word.DIRECTION_HORIZONTAL);
+					}
+					
+					if(startV) {
+						int length = getRunLength(x, y, 0, 1, g);
+						createWordByKey(v, pz, ""+wordCount, x, y, length, Word.DIRECTION_VERTICAL);
+					}
+				}
+			}
+		}
+		
+
+		private int getRunLength(int x, int y, int dx, int dy, boolean[][] g) {
+			int count = 0;
+			
+			do {
+				count ++;
+				x += dx;
+				y += dy;
+			} while(x<g.length && y<g[x].length && g[x][y]);
+			
+			return count;
+		}
+
+		private void createWordByKey(Map hints, Puzzle pz, String key, int x, int y, int length, int direction) {
+			String hint = (String)hints.get(key);
+			pz.add(new Word(x, y, length, direction, key, hint));
+		}
+
+
+		private boolean horizontalWordStartsAt(int x, int y, boolean[][] g) {
+			if (g[x][y]) { //curent square white?
+				if (x < g.length-1 && g[x+1][y]) //next square white?
+					return (x == 0) || !g[x-1][y]; //previous square non-white?
+			}
+			return false;
+		}
+		
+		private boolean verticalWordStartsAt(int x, int y, boolean[][] g) {
+			if (g[x][y]) {
+				if (y < g[x].length-1 && g[x][y+1])
+					return (y == 0) || !g[x][y-1];
+			}
+			return false;
+		}		
 
 		private void makeWordsHorizontal(boolean[][] g, Map m, Puzzle pz) {
 			List/*String*/ hintKeysInOrder = getKeysInOrder(m);
@@ -577,6 +636,12 @@ public class DerStandardFetcher implements Fetcher {
 			ples.put(id, ple);
 		} 
 		return ple;
+	}
+	
+	public static void main(String[] args) throws Exception {
+		DerStandardFetcher dsf = new DerStandardFetcher();
+		Puzzle p = dsf.fetchPuzzle("http://derstandard.at/1324170241255/Kreuzwortraetsel-Nr-6958?_lexikaGroup=1");
+		System.out.println(p);
 	}
 
 }
