@@ -88,6 +88,20 @@ public class Catalog {
 		}
 	}
 
+	public synchronized PuzzleListEntry getPuzzleById(String id) {
+		if (id == null)
+			return null;
+		
+		Iterator i = entries.iterator();
+		while (i.hasNext()) {
+			PuzzleListEntry ple = (PuzzleListEntry) i.next();
+			if (ple.getId().equals(id))
+				return ple;
+		}
+
+		return null;
+	}
+
 
 
 }

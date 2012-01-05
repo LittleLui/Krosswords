@@ -8,8 +8,12 @@ package littlelui.krosswords;
  *  
  */
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Date;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.PuzzleListEntry;
@@ -18,7 +22,8 @@ import littlelui.krosswords.model.Puzzle;
 
 import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
-import com.sun.xml.internal.bind.v2.TODO;
+import com.amazon.kindle.kindlet.ui.KMenu;
+import com.amazon.kindle.kindlet.ui.KMenuItem;
 
 public class Main extends AbstractKindlet {
 	
@@ -32,11 +37,22 @@ public class Main extends AbstractKindlet {
         
         private Catalog catalog;
         private DownloadManager dm;
-
+        
+        private KMenu puzzleMenu = new KMenu();
+        private KMenu catalogMenu = new KMenu();
+        
         public Main() {
 			super();
 			instance = this;
-		}
+			
+			puzzleMenu.add(new KMenuItem(NAVIGATE_TO_CATALOG));
+			puzzleMenu.add(new KMenuItem(VALIDATE));
+			puzzleMenu.add(new KMenuItem(RESET));
+			puzzleMenu.add(new KMenuItem(FINISH));
+
+			catalogMenu.add(new KMenuItem(NAVIGATE_TO_LAST_PUZZLE));
+
+        }
         
         public static Main getInstance() {
         	return instance;
@@ -62,19 +78,22 @@ public class Main extends AbstractKindlet {
         }
 
 		public void start() {
-			String lastOpenPuzzle = loadLastOpenPuzzleId();
+			PuzzleListEntry ple = getLastPuzzle();
 			
-			if (lastOpenPuzzle == null) {
+			if (ple == null) {
 				navigateToCatalog();
 			} else {
-//				navigateToPuzzle(lastOpenPuzzle);
+				navigateToPuzzle(ple);
 			}
 			
 			dm.start();
-    			
-			//TODO: find last panel we worked on and load it, then we can
-    		
         }
+
+	private PuzzleListEntry getLastPuzzle() {
+		String lastOpenPuzzleId = loadLastOpenPuzzleId();
+		PuzzleListEntry ple = lastOpenPuzzleId == null ? null : catalog.getPuzzleById(lastOpenPuzzleId);
+		return ple;
+	}
 
 	private String loadLastOpenPuzzleId() {
 			//TODO: implement
@@ -83,7 +102,6 @@ public class Main extends AbstractKindlet {
 		}
 
 	public void stop() {
-		File dir = ctx.getHomeDirectory();
 		// save solution state of the panel
 		if (currentlyPlaying != null) {
 			currentlyPlaying.setLastPlayed(new Date());
@@ -106,6 +124,8 @@ public class Main extends AbstractKindlet {
 		c.validate(); 
 		c.repaint();
 		
+		ctx.setMenu(puzzleMenu);
+		
 //		//load solution state of the panel
 //		try {
 //			model.loadSolutionState(dir);
@@ -122,6 +142,12 @@ public class Main extends AbstractKindlet {
 		Container c = ctx.getRootContainer();
 		c.removeAll();
 		c.add(new CatalogPanel(this, ctx, catalog));
+
+		c.validate(); 
+		c.repaint();
+		
+		ctx.setMenu(catalogMenu);
+
 	}
 
 	public File getCatalogDir() {
@@ -133,7 +159,49 @@ public class Main extends AbstractKindlet {
 		
 	}
 	
-	
+	private Action NAVIGATE_TO_LAST_PUZZLE = new AbstractAction("Open Last Puzzle") {
 		
+		public boolean isEnabled() {
+			return getLastPuzzle() != null;
+		}
 
+		public void actionPerformed(ActionEvent e) {
+			PuzzleListEntry last = getLastPuzzle();
+			navigateToPuzzle(last);
+		}
+	};
+	
+	private Action NAVIGATE_TO_CATALOG = new AbstractAction("Open Catalog") {
+		public void actionPerformed(ActionEvent e) {
+			if (currentlyPlaying != null) {
+				currentlyPlaying.setLastPlayed(new Date());
+			}
+			
+			navigateToCatalog();
+		}
+	};
+	
+	private Action FINISH = new AbstractAction("Mark Puzzle Finished") {
+		public void actionPerformed(ActionEvent e) {
+			if (currentlyPlaying != null) {
+				currentlyPlaying.setPuzzleSolutionState(PuzzleListEntry.FINISHED);
+				currentlyPlaying.setLastPlayed(new Date());
+			}
+			
+			navigateToCatalog();
+		}
+	};
+
+	private Action VALIDATE = new AbstractAction("Validate Result") {
+		public void actionPerformed(ActionEvent e) {
+			//TODO
+		}
+	};
+	
+	private Action RESET = new AbstractAction("Reset Puzzle") {
+		public void actionPerformed(ActionEvent e) {
+			//TODO
+		}
+	};
+	
 }
