@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="krosswords" default="sign">
 	<target name="jar">
+
 		<unzip dest="../bin/">
 		    <fileset dir="../lib-distribute/">
         		<include name="*.jar"/>
         	</fileset>
-		</unzip> 
+		</unzip>
+		
+  		<copy todir="../bin">
+    		<fileset dir="../resource/"/>
+  		</copy>
+  		
 		 <jar destfile="../target/krosswords.jar"
 		 	  basedir="../bin/"
 		 	  manifest="../src/Manifest.MF"/>
@@ -29,9 +35,9 @@
     	<!-- <copy file="../target/krosswords.azw2" todir="F:/documents"/>-->
     	
     	<!-- usbnet --> 
-    	<!-- <scp file="../target/krosswords.azw2" todir="root:leiste@192.168.15.244:/mnt/us/documents" trust="yes"/> --> 
+    	<scp file="../target/krosswords.azw2" todir="root:leiste@192.168.15.244:/mnt/us/documents" trust="yes"/> 
     	<!-- wifi --> 
-    	 <scp file="../target/krosswords.azw2" todir="root:leiste@10.10.1.232:/mnt/us/documents" trust="yes"/> 
+    	<!-- <scp file="../target/krosswords.azw2" todir="root:leiste@10.10.1.232:/mnt/us/documents" trust="yes"/> --> 
     </target>
 </project>
 

@@ -2,9 +2,12 @@ package littlelui.krosswords;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -17,6 +20,22 @@ public class PuzzleListEntryPanel extends JPanel {
 	private Font F_TITLE = new Font(Font.SANS_SERIF, Font.PLAIN, 22);
 	private Font F_SMALL = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
 	
+	private static Icon loadIcon(String name) {
+		return new ImageIcon(PuzzleListEntryPanel.class.getResource("/icons/"+name+"_24.png"));
+	}
+	
+	private static final Icon I_DL_NOT = loadIcon("tray");
+	private static final Icon I_DL_ING = loadIcon("inbox");
+	private static final Icon I_DL_OK = loadIcon("tray_full");
+	private static final Icon I_DL_ERR = loadIcon("warning");
+	
+	private static final Icon I_S_NEW = loadIcon("bulb_off");
+	private static final Icon I_S_PROGRESS = loadIcon("bulb_on");
+	private static final Icon I_S_SOLVED = loadIcon("checkmark");
+	
+	private static final Icon I_C_GOOD = loadIcon("comment_check");
+	private static final Icon I_C_BAD = loadIcon("comment_delete");
+
 	public PuzzleListEntryPanel(PuzzleListEntry entry) {
 		super();
 		this.entry = entry;
@@ -26,13 +45,17 @@ public class PuzzleListEntryPanel extends JPanel {
 		
 		final JLabel lTitle = new JLabel(entry.getName());
 		final JLabel lOrigin = new JLabel(entry.getProvider());
-		final JLabel lSummary = new JLabel(summarize(entry));
+		final JLabel lDownload = new JLabel(getPuzzleDownloadIcon());
+		final JLabel lSolving = new JLabel(getSolvingIcon());
+		final JLabel lCheck = new JLabel(getCheckIcon());
 		
 		entry.addListener(new Listener() {
 			public void changed(PuzzleListEntry ple) {
 				lTitle.setText(ple.getName());
 				lOrigin.setText(ple.getProvider());
-				lSummary.setText(summarize(ple));
+				lDownload.setIcon(getPuzzleDownloadIcon());
+				lSolving.setIcon(getSolvingIcon());
+				lCheck.setIcon(getCheckIcon());
 				validate();
 				repaint();
 			}
@@ -40,11 +63,42 @@ public class PuzzleListEntryPanel extends JPanel {
 		
 		lTitle.setFont(F_TITLE);
 		lOrigin.setFont(F_SMALL);
-		lSummary.setFont(F_SMALL);
 		
 		add(lTitle, BorderLayout.CENTER);
 		add(lOrigin, BorderLayout.EAST);
-		add(lSummary, BorderLayout.SOUTH);
+		
+		JPanel pSummary = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		pSummary.add(lDownload);
+		pSummary.add(lSolving);
+		pSummary.add(lCheck);
+		add(pSummary, BorderLayout.SOUTH);
+	}
+
+	private Icon getCheckIcon() {
+		switch (entry.getPuzzleSolutionState()) {
+			case PuzzleListEntry.FINISHED_VERIFIED : return I_C_GOOD;
+			default : return null;
+		}
+	}
+
+	private Icon getSolvingIcon() {
+		switch (entry.getPuzzleSolutionState()) {
+			case PuzzleListEntry.NOT_PLAYED : return I_S_NEW;
+			case PuzzleListEntry.IN_PROGRESS : return I_S_PROGRESS;
+			case PuzzleListEntry.FINISHED :
+			case PuzzleListEntry.FINISHED_VERIFIED : return I_S_SOLVED;
+			default : return null;
+		}
+	}
+
+	private Icon getPuzzleDownloadIcon() {
+		switch (entry.getPuzzleDownloadState()) {
+			case PuzzleListEntry.NOT_DOWNLOADED : return I_DL_NOT;
+			case PuzzleListEntry.DOWNLOADING: return I_DL_ING;
+			case PuzzleListEntry.DOWNLOADED : return I_DL_OK;
+			case PuzzleListEntry.DOWNLOAD_FAILED: return I_DL_ERR;
+			default : return null;
+		}
 	}
 
 	private String summarize(PuzzleListEntry e) {
