@@ -101,9 +101,6 @@ public class Word implements Serializable {
 	public void setSolution(String solution) {
 		String old = this.solution;
 		this.solution = solution.toUpperCase();
-		if (!old.equals(solution)) {
-			clearMarks();
-		}
 	}
 
 	public boolean[] getMarks() {
@@ -129,10 +126,6 @@ public class Word implements Serializable {
 		}
 
 		solution = solution.substring(0, i) + text + solution.substring(i+1);
-
-		if (!old.equals(solution)) {
-			clearMarks();
-		}
 	}
 	
 	public String getExpectedSolution() {
@@ -170,6 +163,11 @@ public class Word implements Serializable {
 		}
 
 		return allGood;
+	}
+
+	public void clear() {
+		clearMarks();
+		solution="";
 	}
 	
 	

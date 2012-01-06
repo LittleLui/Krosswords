@@ -25,6 +25,7 @@ import com.amazon.kindle.kindlet.AbstractKindlet;
 import com.amazon.kindle.kindlet.KindletContext;
 import com.amazon.kindle.kindlet.ui.KMenu;
 import com.amazon.kindle.kindlet.ui.KMenuItem;
+import com.amazon.kindle.kindlet.ui.KOptionPane;
 
 public class Main extends AbstractKindlet {
 	
@@ -186,7 +187,7 @@ public class Main extends AbstractKindlet {
 		}
 	};
 
-	private Action VERIFY = new AbstractAction("Verify Solution") {
+	private Action VERIFY = new SolutionAction("Verify Solution") {
 		public void actionPerformed(ActionEvent e) {
 			if (currentlyPlaying != null) {
 				Thread t = new Thread() {
@@ -205,16 +206,57 @@ public class Main extends AbstractKindlet {
 		}
 	};
 	
-	private Action FILL_RANDOM_LETTER = new AbstractAction("Help me!") {
+	private Action FILL_RANDOM_LETTER = new SolutionAction("Help me!") {
 		public void actionPerformed(ActionEvent e) {
-			//TODO
+			if (currentlyPlaying != null) {
+				Thread t = new Thread() {
+					public void run() {
+						currentlyPlaying.getPuzzle().fillRandomLetter();
+
+						Container c = ctx.getRootContainer();
+						c.validate();
+						c.repaint();
+					}
+				};
+				
+				t.start();
+			}
 		}
 	};
 	
 	private Action RESET = new AbstractAction("Reset Puzzle") {
 		public void actionPerformed(ActionEvent e) {
-			//TODO
+			if (currentlyPlaying != null) {
+				Thread t = new Thread() {
+					public void run() {
+						int dlgOption = KOptionPane.showConfirmDialog(ctx.getRootContainer(), "Do you really want to reset the puzzle?", "Reset", KOptionPane.NO_YES_OPTIONS);
+						
+						if (dlgOption == KOptionPane.YES_OPTION) {
+							currentlyPlaying.getPuzzle().clear();
+
+							Container c = ctx.getRootContainer();
+							c.validate();
+							c.repaint();
+						}
+					}
+				};
+				
+				t.start();
+			}
 		}
 	};
 	
+	private abstract class SolutionAction extends AbstractAction {
+		public SolutionAction(String name) {
+			super(name);
+		}
+
+		public boolean isEnabled() {
+			return true; //TODO: we'd need to fire when the currentlyPlaying changes! otherwise they just stay disabled :(
+//			return currentlyPlaying != null && currentlyPlaying.isSolutionAvailable();
+		}
+		
+		
+		
+	}
 }

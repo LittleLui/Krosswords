@@ -113,7 +113,59 @@ public class Puzzle implements Serializable {
 		return allCorrect ? VERIFY_FINISHED_CORRECT : VERIFY_FINISHED_BAD;
 		
 	}
+
+	public void fillRandomLetter() {
+		List/*<Candidate>*/ candidates = findFillingCandidates();
+		
+		int idx = (int)(Math.random() * candidates.size());
+		
+		Candidate candidate = (Candidate)candidates.get(idx);
+		candidate.fill();
+	}
 	
+	private List findFillingCandidates() {
+		List r = new ArrayList();
+		Iterator iWords = words.iterator();
+		while (iWords.hasNext()) {
+			Word w = (Word)iWords.next();
+			String s = w.getSolution();
+			for (int i=0; i<w.getLength(); i++) {
+				if (s.length() <= i || s.charAt(i) == ' ') {
+					Candidate c = new Candidate(w, i);
+					r.add(c);
+				}
+			}
+		}
+		return r;
+	}
+
+	private class Candidate {
+		private Word w;
+		private int idx;
+		
+		public Candidate(Word w, int idx) {
+			super();
+			this.w = w;
+			this.idx = idx;
+		}
+		
+		public void fill() {
+			String ltr = w.getExpectedSolution().substring(idx, idx+1);
+			w.setSolution(idx, ltr);
+			w.getMarks()[idx] = true;
+		}
+		
+		
+	}
+
+	public void clear() {
+		Iterator iWords = words.iterator();
+		while (iWords.hasNext()) {
+			Word w = (Word)iWords.next();
+			w.clear();
+		}		
+		
+	}
 	
 	
 	

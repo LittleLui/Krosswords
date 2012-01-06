@@ -48,7 +48,7 @@ public class CrosswordPanel extends JComponent {
 		this.model = model;
 		this.ctx = ctx;
 		
-		preferredSize = new Dimension(model.getWidth() * scale, model.getHeight() * scale);
+		preferredSize = new Dimension(model.getWidth() * scale + 1, model.getHeight() * scale + 1);
 		
 		OnscreenKeyboardProperties kp = new OnscreenKeyboardProperties();
 		kp.addProperty(OnscreenKeyboardProperties.KEYBOARD_PROPERTY_DISABLED);
@@ -239,7 +239,7 @@ public class CrosswordPanel extends JComponent {
 			g.drawLine(0, y * scale, model.getWidth() * scale, y * scale);
 		}
 		
-		super.paintChildren(g);
+		super.paintChildren(g); 
 	}
 
 
@@ -263,7 +263,9 @@ public class CrosswordPanel extends JComponent {
 			
 			if (marks[is]) {
 				Rectangle rect = getLetterRectangle(w, is);
-				g.drawRect(rect.x + 1, rect.y + 1, rect.width - 4 , rect.height - 4);
+				g.setColor(Color.DARK_GRAY);
+				g.drawRect(rect.x+1, rect.y+1, rect.width - 4 , rect.height - 4);
+				g.setColor(Color.black);
 			}
 			
 		}
