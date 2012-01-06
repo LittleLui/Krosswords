@@ -3,6 +3,7 @@ package littlelui.krosswords.fetch;
 import java.util.Collection;
 
 import littlelui.krosswords.catalog.PuzzleListEntry;
+import littlelui.krosswords.catalog.PuzzleSolution;
 import littlelui.krosswords.model.Puzzle;
 
 public interface Fetcher {
@@ -19,4 +20,6 @@ public interface Fetcher {
  * @throws Exception 
    */
   public Puzzle fetchPuzzle(PuzzleListEntry listEntry) throws Exception;
+
+  public PuzzleSolution fetchSolution(PuzzleListEntry ple) throws Exception;
 }

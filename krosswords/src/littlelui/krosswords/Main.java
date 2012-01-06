@@ -5,6 +5,7 @@ package littlelui.krosswords;
  *  - toolbar ausblenden
  *  
  *  - lösungen auch laden und prüfen wenn fertig (oder via menüpunkt)
+ *  - kontextmenü bei download-fehlerhaften rätseln zur anzeige des fehlers
  *  
  */
 import java.awt.Container;
@@ -46,7 +47,8 @@ public class Main extends AbstractKindlet {
 			instance = this;
 			
 			puzzleMenu.add(new KMenuItem(NAVIGATE_TO_CATALOG));
-			puzzleMenu.add(new KMenuItem(VALIDATE));
+			puzzleMenu.add(new KMenuItem(VERIFY));
+			puzzleMenu.add(new KMenuItem(FILL_RANDOM_LETTER));
 			puzzleMenu.add(new KMenuItem(RESET));
 			puzzleMenu.add(new KMenuItem(FINISH));
 
@@ -125,14 +127,6 @@ public class Main extends AbstractKindlet {
 		c.repaint();
 		
 		ctx.setMenu(puzzleMenu);
-		
-//		//load solution state of the panel
-//		try {
-//			model.loadSolutionState(dir);
-//		} catch (IOException ioe) {
-//			//TODO: log?
-//		}
-
 	}
 		
 	public void navigateToCatalog() {
@@ -192,7 +186,26 @@ public class Main extends AbstractKindlet {
 		}
 	};
 
-	private Action VALIDATE = new AbstractAction("Validate Result") {
+	private Action VERIFY = new AbstractAction("Verify Solution") {
+		public void actionPerformed(ActionEvent e) {
+			if (currentlyPlaying != null) {
+				Thread t = new Thread() {
+					public void run() {
+						currentlyPlaying.verify();
+
+						Container c = ctx.getRootContainer();
+						c.validate();
+						c.repaint();
+					}
+				};
+				
+				t.start();
+			}
+			
+		}
+	};
+	
+	private Action FILL_RANDOM_LETTER = new AbstractAction("Help me!") {
 		public void actionPerformed(ActionEvent e) {
 			//TODO
 		}

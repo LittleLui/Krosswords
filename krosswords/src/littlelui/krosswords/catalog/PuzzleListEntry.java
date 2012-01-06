@@ -19,6 +19,8 @@ import littlelui.krosswords.Main;
 import littlelui.krosswords.model.Puzzle;
 
 public final class PuzzleListEntry implements Serializable, Comparable {
+	private static final long serialVersionUID = 1L;
+	
 	public static final int NOT_DOWNLOADED = 0;
 	public static final int DOWNLOADING = 1;
 	public static final int DOWNLOADED = 2;
@@ -27,7 +29,8 @@ public final class PuzzleListEntry implements Serializable, Comparable {
 	public static final int NOT_PLAYED = 0;
 	public static final int IN_PROGRESS = 1;
 	public static final int FINISHED = 2;
-	public static final int FINISHED_VERIFIED = 3;
+	public static final int FINISHED_VERIFIED_OK = 3;
+	public static final int FINISHED_VERIFIED_BAD = 4;
 	
 	private String id;
 	private String name;
@@ -122,7 +125,7 @@ public final class PuzzleListEntry implements Serializable, Comparable {
 	public void setSolutionDownloadState(int solutionDownloadState) {
 		this.solutionDownloadState = solutionDownloadState;
 		
-		if (puzzleDownloadState != DOWNLOADING)
+		if (solutionDownloadState != DOWNLOADING)
 			persist();
 		
 		fireChange();
@@ -312,6 +315,21 @@ public final class PuzzleListEntry implements Serializable, Comparable {
 		if (solutionDownloadState != other.solutionDownloadState)
 			return false;
 		return true;
+	}
+
+	public void setExpectedSolution(PuzzleSolution ps) {
+		if (puzzle != null)
+			ps.fillInto(puzzle);
+	}
+
+	public void verify() {
+		int state = puzzle.verify(); 
+		
+		if (state == Puzzle.VERIFY_FINISHED_CORRECT) {
+			puzzleSolutionState = FINISHED_VERIFIED_OK;
+		} else if (state == Puzzle.VERIFY_FINISHED_BAD) {
+			puzzleSolutionState = FINISHED_VERIFIED_BAD;
+		}
 	}
 
 	

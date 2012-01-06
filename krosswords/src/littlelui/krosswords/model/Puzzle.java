@@ -1,18 +1,20 @@
 package littlelui.krosswords.model;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import littlelui.krosswords.Main;
-
 public class Puzzle implements Serializable {
+	public static final int VERIFY_FINISHED_BAD = -1;
+	public static final int VERIFY_FINISHED_CORRECT = 1;
+	public static final int VERIFY_NOT_FINISHED = 0;
+
+	private static final long serialVersionUID = 1L;
+
 	private int width;
 	private int height;
 	
@@ -70,6 +72,46 @@ public class Puzzle implements Serializable {
 		} catch (Exception ioe) {
 			//whatever goes wrong (probably just: no solution state), it's fine with me.
 		}
+	}
+
+	/* verifies all data against the solution
+	 * returns 0 for "not finished yet"
+	 * returns 1 for "finished and correct"
+	 * returns -1 for "finished but has errors"
+	 */
+	public int verify() {
+		boolean finished = true;
+		boolean allCorrect = true;
+		
+		Iterator iWords = words.iterator();
+		while (iWords.hasNext()) {
+			Word w = (Word)iWords.next();
+			
+			String s = w.getSolution();
+			if (s.length() < w.getLength()) {
+				finished = false;
+			}
+			
+			for (int i=0; i<s.length(); i++) {
+				if (s.charAt(i) == ' ') {
+					finished = false;
+					break; 
+				}
+			}
+			
+			
+			
+			
+			boolean correct = w.verify();
+			if (!correct)
+				allCorrect = false;
+		}
+		
+		if (!finished)
+			return VERIFY_NOT_FINISHED;
+		
+		return allCorrect ? VERIFY_FINISHED_CORRECT : VERIFY_FINISHED_BAD;
+		
 	}
 	
 	

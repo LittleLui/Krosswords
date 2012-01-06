@@ -10,6 +10,7 @@ import java.util.Map;
 
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.PuzzleListEntry;
+import littlelui.krosswords.catalog.PuzzleSolution;
 import littlelui.krosswords.model.Puzzle;
 
 import com.amazon.kindle.kindlet.KindletContext;
@@ -116,7 +117,36 @@ public class DownloadManager implements ConnectivityHandler {
 		}
 	}
 	
-	
+	private void fetchSingleSolutionAndUpdate(PuzzleListEntry ple) {
+		Fetcher f = (Fetcher)fetchers.get(ple.getProvider());
+		
+		if (f == null) {
+			ple.setSolutionDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
+			ple.setAttribute("error", "No fetcher, we only have fetchers for "+Arrays.toString(fetchers.keySet().toArray()));
+			return;
+		}
+
+		try {
+			ple.setSolutionDownloadState(PuzzleListEntry.DOWNLOADING);
+
+			PuzzleSolution ps = f.fetchSolution(ple);
+			
+			if (ps != null) {
+				ple.setExpectedSolution(ps);
+				ple.setSolutionDownloadState(PuzzleListEntry.DOWNLOADED);
+			} else {
+				ple.setSolutionDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
+				ple.setAttribute("error", "Fetcher didn't deliver.");
+			}
+
+		} catch (Throwable t) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			t.printStackTrace(pw);
+			ple.setAttribute("error", t.getMessage()+"\n"+sw.toString());
+			ple.setSolutionDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
+		}
+	}	
 	
 	class DownloadRunnable implements Runnable {
 		private transient boolean running = true;
@@ -137,6 +167,9 @@ public class DownloadManager implements ConnectivityHandler {
 				PuzzleListEntry ple = (PuzzleListEntry)entries.next();
 				if (ple.getPuzzleDownloadState() != PuzzleListEntry.DOWNLOADED) {
 					fetchSinglePuzzleAndUpdate(ple);
+				}
+				if (ple.getSolutionDownloadState() != PuzzleListEntry.DOWNLOADED) {
+					fetchSingleSolutionAndUpdate(ple);
 				}
 			}
 			

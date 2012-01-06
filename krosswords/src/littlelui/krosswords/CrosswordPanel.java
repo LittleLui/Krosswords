@@ -225,7 +225,8 @@ public class CrosswordPanel extends JComponent {
 
 			g.setFont(solutionFont);
 			String s = w.getSolution();
-			paintString(g, fmSol, w, r, s);
+			boolean[] marks = w.getMarks();
+			paintString(g, fmSol, w, r, s, marks);
 		}
 
 		
@@ -247,7 +248,7 @@ public class CrosswordPanel extends JComponent {
 
 
 	private void paintString(Graphics g, FontMetrics fmSol, Word w,
-			Rectangle r, String s) {
+			Rectangle r, String s, boolean[] marks) {
 		for (int is = 0; is<s.length(); is++) {
 			char c = s.charAt(is);
 			int dx = 0;
@@ -259,6 +260,11 @@ public class CrosswordPanel extends JComponent {
 				dy = is * scale;
 			
 			g.drawString(""+c, dx+r.x+(scale - fmSol.charWidth(c))/2, dy+r.y+fmSol.getHeight());
+			
+			if (marks[is]) {
+				Rectangle rect = getLetterRectangle(w, is);
+				g.drawRect(rect.x + 1, rect.y + 1, rect.width - 4 , rect.height - 4);
+			}
 			
 		}
 	}

@@ -45,17 +45,17 @@ public class PuzzleListEntryPanel extends JPanel {
 		
 		final JLabel lTitle = new JLabel(entry.getName());
 		final JLabel lOrigin = new JLabel(entry.getProvider());
-		final JLabel lDownload = new JLabel(getPuzzleDownloadIcon());
+		final JLabel lDownload = new JLabel(getDownloadIcon(entry.getPuzzleDownloadState()));
+		final JLabel lSolutionDownload = new JLabel(getDownloadIcon(entry.getSolutionDownloadState()));
 		final JLabel lSolving = new JLabel(getSolvingIcon());
-		final JLabel lCheck = new JLabel(getCheckIcon());
 		
 		entry.addListener(new Listener() {
 			public void changed(PuzzleListEntry ple) {
 				lTitle.setText(ple.getName());
 				lOrigin.setText(ple.getProvider());
-				lDownload.setIcon(getPuzzleDownloadIcon());
+				lDownload.setIcon(getDownloadIcon(ple.getPuzzleDownloadState()));
+				lSolutionDownload.setIcon(getDownloadIcon(ple.getSolutionDownloadState()));
 				lSolving.setIcon(getSolvingIcon());
-				lCheck.setIcon(getCheckIcon());
 				validate();
 				repaint();
 			}
@@ -69,30 +69,24 @@ public class PuzzleListEntryPanel extends JPanel {
 		
 		JPanel pSummary = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		pSummary.add(lDownload);
+		pSummary.add(lSolutionDownload);
 		pSummary.add(lSolving);
-		pSummary.add(lCheck);
 		add(pSummary, BorderLayout.SOUTH);
-	}
-
-	private Icon getCheckIcon() {
-		switch (entry.getPuzzleSolutionState()) {
-			case PuzzleListEntry.FINISHED_VERIFIED : return I_C_GOOD;
-			default : return null;
-		}
 	}
 
 	private Icon getSolvingIcon() {
 		switch (entry.getPuzzleSolutionState()) {
 			case PuzzleListEntry.NOT_PLAYED : return I_S_NEW;
 			case PuzzleListEntry.IN_PROGRESS : return I_S_PROGRESS;
-			case PuzzleListEntry.FINISHED :
-			case PuzzleListEntry.FINISHED_VERIFIED : return I_S_SOLVED;
+			case PuzzleListEntry.FINISHED : return I_S_SOLVED;
+			case PuzzleListEntry.FINISHED_VERIFIED_OK : return I_C_GOOD;
+			case PuzzleListEntry.FINISHED_VERIFIED_BAD : return I_C_BAD;
 			default : return null;
 		}
 	}
 
-	private Icon getPuzzleDownloadIcon() {
-		switch (entry.getPuzzleDownloadState()) {
+	private Icon getDownloadIcon(int downloadState) {
+		switch (downloadState) {
 			case PuzzleListEntry.NOT_DOWNLOADED : return I_DL_NOT;
 			case PuzzleListEntry.DOWNLOADING: return I_DL_ING;
 			case PuzzleListEntry.DOWNLOADED : return I_DL_OK;
@@ -134,7 +128,8 @@ public class PuzzleListEntryPanel extends JPanel {
 			case PuzzleListEntry.NOT_PLAYED: return "New";
 			case PuzzleListEntry.IN_PROGRESS: return "In Progress";
 			case PuzzleListEntry.FINISHED: return "Solved";
-			case PuzzleListEntry.FINISHED_VERIFIED: return "Solved and Checked";
+			case PuzzleListEntry.FINISHED_VERIFIED_OK: return "Solved and Checked";
+			case PuzzleListEntry.FINISHED_VERIFIED_BAD: return "Solved and Checked (but wrong!)";
 		}
 		
 		return "unknown";

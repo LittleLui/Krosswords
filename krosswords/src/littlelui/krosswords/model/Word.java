@@ -3,6 +3,8 @@ package littlelui.krosswords.model;
 import java.io.Serializable;
 
 public class Word implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	public static final int DIRECTION_HORIZONTAL = 1000;
 	public static final int DIRECTION_VERTICAL = 2000;
 	
@@ -17,6 +19,10 @@ public class Word implements Serializable {
 	private String hint;
 	
 	private String solution="";
+	private String expectedSolution=null;
+	
+	//marks to indicate validation failure
+	private boolean[] marks;
 	
 	public Word(int x, int y, int length, int direction, int key, String hint) {
 		this(x, y, length, direction, ""+key, hint);
@@ -27,6 +33,7 @@ public class Word implements Serializable {
 		this.x = x;
 		this.y = y;
 		this.length = length;
+		this.marks = new boolean[length];
 		
 		if (direction != DIRECTION_HORIZONTAL && direction != DIRECTION_VERTICAL)
 			throw new IllegalArgumentException("Direction has to be either horizontal or vertical.");
@@ -92,10 +99,25 @@ public class Word implements Serializable {
 	}
 
 	public void setSolution(String solution) {
+		String old = this.solution;
 		this.solution = solution.toUpperCase();
+		if (!old.equals(solution)) {
+			clearMarks();
+		}
+	}
+
+	public boolean[] getMarks() {
+		return marks;
+	}
+
+	private void clearMarks() {
+		for (int i=0; i<length; i++)
+			marks[i] = false;
 	}
 
 	public void setSolution(int i, String text) {
+		String old = this.solution;
+
 		if (text == null || text.length() == 0)
 			text = " ";
 		
@@ -107,6 +129,18 @@ public class Word implements Serializable {
 		}
 
 		solution = solution.substring(0, i) + text + solution.substring(i+1);
+
+		if (!old.equals(solution)) {
+			clearMarks();
+		}
+	}
+	
+	public String getExpectedSolution() {
+		return expectedSolution;
+	}
+
+	public void setExpectedSolution(String expectedSolution) {
+		this.expectedSolution = expectedSolution;
 	}
 
 	private String spaces(int i) {
@@ -116,6 +150,26 @@ public class Word implements Serializable {
 			s += " ";
 		
 		return s;
+	}
+
+	//return true if all letters that have been entered yet (!) are correct
+	public boolean verify() {
+		clearMarks();
+		
+		boolean allGood = true;
+		
+		for (int i=0; i<solution.length(); i++) {
+			char s = solution.charAt(i);
+			if (s != ' ' && expectedSolution != null && expectedSolution.length() > i) {
+				char v = expectedSolution.charAt(i);
+				if (s != v) {
+					marks[i] = true;
+					allGood = false;
+				}
+			}
+		}
+
+		return allGood;
 	}
 	
 	

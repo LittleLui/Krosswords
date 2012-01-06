@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.swing.JFrame;
@@ -31,12 +32,14 @@ import javax.swing.JPanel;
 
 import littlelui.krosswords.Main;
 import littlelui.krosswords.catalog.PuzzleListEntry;
+import littlelui.krosswords.catalog.PuzzleSolution;
 import littlelui.krosswords.model.Puzzle;
 import littlelui.krosswords.model.Word;
 
 import org.apache.regexp.RE;
 import org.ccil.cowan.tagsoup.Parser;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -292,6 +295,86 @@ public class DerStandardFetcher implements Fetcher {
 
 	}
 
+
+	
+	
+	
+	
+	private final class SolutionProducingContentHandler extends DefaultHandler {
+		private PuzzleSolution solution = new PuzzleSolution();
+
+		private boolean inCopyText = false;
+		private boolean inHorizontal = false;
+		private boolean inVertical = false;
+		
+		private String buffer = "";
+		
+		public PuzzleSolution getSolution() {
+			return solution;
+		}
+
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if ("div".equals(localName) && "copytext".equals(attributes.getValue("class"))) {
+				inCopyText = true;
+			} else if ("div".equals(localName) && "bodycopy".equals(attributes.getValue("class"))) {
+				inCopyText = true;
+			}
+			
+			else if ("p".equals(localName)) {
+				buffer = "";
+			}
+		}
+
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if ((inHorizontal || inVertical) && "p".equals(localName)) {
+				String s = buffer.trim();
+				buffer = "";
+				System.out.println(s);
+				
+				StringTokenizer st = new StringTokenizer(s);
+				if (st.hasMoreTokens()) {
+					String key = st.nextToken();
+					if (st.hasMoreTokens()) {
+						String word = st.nextToken();
+						
+						if (inHorizontal)
+							solution.addHorizontalWord(key, word);
+						else
+							solution.addVerticalWord(key, word);
+					}
+				}
+			}
+		}
+
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			if (inCopyText) {
+				String s = String.valueOf(ch, start, length);
+				String t = s.trim();
+				if (t.startsWith("W:")) {
+					inHorizontal = true;
+					inVertical = false;
+					buffer += t.substring(2);
+				} else if (t.startsWith("S:")) {
+					inHorizontal = false;
+					inVertical = true;
+					buffer += t.substring(2);
+				} else {
+					if (inHorizontal || inVertical) {
+						buffer += s;
+					}
+				}
+			}
+		}
+
+
+
+	}
+
+	
+	
+	
+	
+	
 	private final String URL_INDEX = "http://derstandard.at/r1256744634465/Kreuzwortraetsel";
 	
 	private static final String P_ID_FROM_HREF = "[A-Za-z\\-]+([0-9]+)";
@@ -375,13 +458,31 @@ public class DerStandardFetcher implements Fetcher {
 	
 	
 	public Puzzle fetchPuzzle(PuzzleListEntry listEntry) throws Exception {
-		return fetchPuzzle(listEntry.getAttribute("puzzle-url"));
-	}
-	
-	private Puzzle fetchPuzzle(String url) throws Exception {
+		String url = listEntry.getAttribute("puzzle-url");
+
 		if (url == null) 
 			return null;
 		
+		PuzzleProducingContentHandler ppch = new PuzzleProducingContentHandler();
+		fetchAndParse(url, ppch);
+		return ppch.getPuzzle();
+	}
+	
+
+	public PuzzleSolution fetchSolution(PuzzleListEntry ple) throws Exception {
+		return fetchSolution(ple.getAttribute("solution-url"));
+	}
+	
+	private PuzzleSolution fetchSolution(String url) throws Exception {
+		if (url == null)
+			return null;
+		
+		SolutionProducingContentHandler spch = new SolutionProducingContentHandler();
+		fetchAndParse(url, spch);
+		return spch.getSolution();
+	}
+
+	private void fetchAndParse(String url, ContentHandler ch) throws Exception {
 		if (url.startsWith("http://derstandard.at")) {
 			url = "http://mobile." + url.substring("http://".length());
 		}
@@ -393,12 +494,9 @@ public class DerStandardFetcher implements Fetcher {
 		  
 		  Parser p = new Parser();
 		  
-		  PuzzleProducingContentHandler ppch = new PuzzleProducingContentHandler();
-		  p.setContentHandler(ppch);
+		  p.setContentHandler(ch);
 
 		  p.parse(is);
-		  
-		  return ppch.getPuzzle();
 		} finally {
 			if (is != null) try {
 				is.getCharacterStream().close();
@@ -638,10 +736,10 @@ public class DerStandardFetcher implements Fetcher {
 		return ple;
 	}
 	
+	
 	public static void main(String[] args) throws Exception {
 		DerStandardFetcher dsf = new DerStandardFetcher();
-		Puzzle p = dsf.fetchPuzzle("http://derstandard.at/1324170241255/Kreuzwortraetsel-Nr-6958?_lexikaGroup=1");
-		System.out.println(p);
+		PuzzleSolution ps = dsf.fetchSolution("http://mobil.derstandard.at/1325485432389/Loesung-Kreuzwortraetsel-Nr-6960?_lexikaGroup=1");
+		System.out.println(ps);
 	}
-
 }
