@@ -99,7 +99,6 @@ public class Word implements Serializable {
 	}
 
 	public void setSolution(String solution) {
-		String old = this.solution;
 		this.solution = solution.toUpperCase();
 	}
 
@@ -113,8 +112,6 @@ public class Word implements Serializable {
 	}
 
 	public void setSolution(int i, String text) {
-		String old = this.solution;
-
 		if (text == null || text.length() == 0)
 			text = " ";
 		
@@ -126,6 +123,9 @@ public class Word implements Serializable {
 		}
 
 		solution = solution.substring(0, i) + text + solution.substring(i+1);
+		
+		clearMarks();
+		
 	}
 	
 	public String getExpectedSolution() {

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.CatalogListener;
@@ -24,18 +25,29 @@ public class CatalogPanel extends KPages implements CatalogListener {
 	private final Catalog catalog;
 
 	
-	public CatalogPanel(Main main, KindletContext ctx, Catalog catalog) {
+	public CatalogPanel(Main main, KindletContext ctx, final Catalog catalog) {
         super(PageProviders.createBoxLayoutProvider(BoxLayout.Y_AXIS));
         this.main = main;
         this.catalog = catalog;
         
         catalog.addListener(this);
 		
-        Iterator i = catalog.getEntries().iterator();
-        while (i.hasNext()) {
-        	PuzzleListEntry ple = (PuzzleListEntry)i.next();
-        	addItem(createItemPanel(ple));
-        }
+        Thread t = new Thread() {
+        	public void run() {
+                Iterator i = catalog.getEntries().iterator();
+                while (i.hasNext()) {
+                	PuzzleListEntry ple = (PuzzleListEntry)i.next();
+                	final JComponent jc = createItemPanel(ple);
+                	SwingUtilities.invokeLater(new Runnable() {
+                		public void run() {
+                        	addItem(jc); 
+                		}
+                	});
+                }
+        	}
+        };
+        
+        t.start();
 	}
 
 

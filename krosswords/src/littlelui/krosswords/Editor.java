@@ -19,25 +19,20 @@ import littlelui.krosswords.model.Word;
 public class Editor {
 	private List/*<JTextField>*/ textfields = new LinkedList();
 	private final Word w;
-	private final Container parent;
 	private final CrosswordPanel crosswordPanel;
 	
 	private final static Insets MARGIN = new Insets(1,1,1,1);
 
-	public Editor(Word w, CrosswordPanel crosswordPanel, Container parent) {
+	public Editor(Word w, CrosswordPanel crosswordPanel) {
 		this.w = w;
-		this.parent = parent;
 		this.crosswordPanel = crosswordPanel;
 		
 		String solution = w.getSolution();
-		for (int i=0; i<w.getLength(); i++) {
+		for (int i=0; i<w.getLength(); i++) { 
 			JTextField tf = createTextField(solution, i);
 			textfields.add(tf);
 			Rectangle l = crosswordPanel.getLetterRectangle(w, i);
-			parent.add(tf);
-			l.x = l.x + crosswordPanel.getBounds().x;
-			l.y = l.y + crosswordPanel.getBounds().y;
-			
+			crosswordPanel.add(tf);
 			tf.setBounds(l);
 		}
 		
@@ -50,15 +45,15 @@ public class Editor {
 			String text = tf.getText();
 			w.setSolution(i, text.toUpperCase());
 
-			int centerX = tf.getBounds().x - crosswordPanel.getBounds().x + crosswordPanel.getScale()/2;
-			int centerY = tf.getBounds().y - crosswordPanel.getBounds().y + crosswordPanel.getScale()/2;
+			int centerX = tf.getBounds().x + crosswordPanel.getScale()/2;
+			int centerY = tf.getBounds().y + crosswordPanel.getScale()/2;
 			Word crossing = crosswordPanel.getWordAt(centerX, centerY, w.getCrossDirection() == Word.DIRECTION_HORIZONTAL); 
 			if (crossing != null) {
 				int iCrossing = crosswordPanel.getIndexInWord(centerX, centerY, crossing);
 				crossing.setSolution(iCrossing, text.toUpperCase());
 			}
 			
-			parent.remove(tf);
+			crosswordPanel.remove(tf);
 		}
 		crosswordPanel.requestFocusInWindow();
 		crosswordPanel.stopEditing();

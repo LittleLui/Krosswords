@@ -119,9 +119,7 @@ public class CrosswordPanel extends JComponent {
 	
 	public void startEditing(Word w, int indexInWord) {
 		currentlyEditing = w;
-		editor = new Editor(w, CrosswordPanel.this, getParent());
-		
-//		hp.setLocation(w.getLocation()); // doesn't really work nicely.
+		editor = new Editor(w, CrosswordPanel.this);
 		
 		if (indexInWord != 0)
 			editor.focusLetter(indexInWord); 
