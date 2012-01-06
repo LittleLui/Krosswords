@@ -23,7 +23,7 @@ public class Catalog {
 		super();
 		this.catalogDir = catalogDir;
 
-		new Thread() {
+		new Thread("Krosswords.Catalog.LoadEntriesFromDisk") {
 			public void run() {
 				loadEntriesFromDisk();
 			}

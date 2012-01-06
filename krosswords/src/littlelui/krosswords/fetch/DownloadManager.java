@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import littlelui.krosswords.Main;
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.catalog.PuzzleSolution;
@@ -57,7 +58,7 @@ public class DownloadManager implements ConnectivityHandler {
 	public void connected() throws InterruptedException {
 		//we've gone online and can now do stuff. like start a download thread.
 		if (downloadThread == null) {
-			downloadThread = new Thread(downloadRunnable);
+			downloadThread = new Thread(downloadRunnable, "Krosswords.DownloadManager");
 			downloadThread.start();
 		}
 	}
@@ -152,28 +153,33 @@ public class DownloadManager implements ConnectivityHandler {
 		private transient boolean running = true;
 		
 		public void run() {
-			running = true;
-			
-			if (shouldUpdateLists()) {
-				ctx.setSubTitle("Updating");
-				updateLists();
-			} 
-			
-			Iterator/*<PuzzleListEntry>*/ entries = catalog.getEntries().iterator();
-			
-			ctx.setSubTitle("Downloading");
+			try {
+				running = true;
+				
+				if (shouldUpdateLists()) {
+					ctx.setSubTitle("Updating");
+					updateLists();
+				} 
+				
+				Iterator/*<PuzzleListEntry>*/ entries = catalog.getEntries().iterator();
+				
+				ctx.setSubTitle("Downloading");
 
-			while(running && entries.hasNext()) {
-				PuzzleListEntry ple = (PuzzleListEntry)entries.next();
-				if (ple.getPuzzleDownloadState() != PuzzleListEntry.DOWNLOADED) {
-					fetchSinglePuzzleAndUpdate(ple);
+				while(running && entries.hasNext()) {
+					PuzzleListEntry ple = (PuzzleListEntry)entries.next();
+					if (ple.getPuzzleDownloadState() != PuzzleListEntry.DOWNLOADED) {
+						fetchSinglePuzzleAndUpdate(ple);
+					}
+					if (ple.getSolutionDownloadState() != PuzzleListEntry.DOWNLOADED) {
+						fetchSingleSolutionAndUpdate(ple);
+					}
 				}
-				if (ple.getSolutionDownloadState() != PuzzleListEntry.DOWNLOADED) {
-					fetchSingleSolutionAndUpdate(ple);
-				}
+			} catch (Exception t) {
+				Main.getInstance().logError("Error in DownloadManager", t);
+			} finally {
+				ctx.setSubTitle(null);	
 			}
 			
-			ctx.setSubTitle(null);
 		}
 		
 

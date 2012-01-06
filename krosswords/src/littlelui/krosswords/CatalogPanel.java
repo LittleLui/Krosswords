@@ -32,22 +32,12 @@ public class CatalogPanel extends KPages implements CatalogListener {
         
         catalog.addListener(this);
 		
-        Thread t = new Thread() {
-        	public void run() {
-                Iterator i = catalog.getEntries().iterator();
-                while (i.hasNext()) {
-                	PuzzleListEntry ple = (PuzzleListEntry)i.next();
-                	final JComponent jc = createItemPanel(ple);
-                	SwingUtilities.invokeLater(new Runnable() {
-                		public void run() {
-                        	addItem(jc); 
-                		}
-                	});
-                }
-        	}
-        };
-        
-        t.start();
+        Iterator i = catalog.getEntries().iterator();
+        while (i.hasNext()) {
+        	PuzzleListEntry ple = (PuzzleListEntry)i.next();
+        	final JComponent jc = createItemPanel(ple);
+           	addItem(jc); 
+        }
 	}
 
 
@@ -72,6 +62,12 @@ public class CatalogPanel extends KPages implements CatalogListener {
 
 
 	public void entryAdded(PuzzleListEntry entry, int index) {
-		addItem(createItemPanel(entry), index);
+		JComponent jc = createItemPanel(entry);
+		if (index >= getComponentCount())
+			addItem(jc);
+		else
+			addItem(jc, index);
+		
+		validate();
 	}
 }

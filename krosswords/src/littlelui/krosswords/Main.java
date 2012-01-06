@@ -11,6 +11,9 @@ package littlelui.krosswords;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
@@ -149,9 +152,29 @@ public class Main extends AbstractKindlet {
 		return catalogDir;
 	}
 
-	public void logError(String string, Exception e) {
-//		 TODO Auto-generated method stub
-		
+	public synchronized void logError(String string, Exception e) {
+		File f = new File(ctx.getHomeDirectory(), "error.log");
+		PrintWriter pw = null;
+		try {
+			FileWriter fw = new FileWriter(f,  true);
+			pw = new PrintWriter(fw); 
+			pw.println(new Date().toString());
+			if (string != null) { 
+				pw.println(string);
+			}
+			
+			if (e != null) {
+				e.printStackTrace(pw);
+				pw.println();
+				pw.println();
+			}
+			
+			
+		} catch (IOException ioe) {
+			//ignore.
+		} finally {
+			pw.close();
+		}
 	}
 	
 	private Action NAVIGATE_TO_LAST_PUZZLE = new AbstractAction("Open Last Puzzle") {
@@ -190,7 +213,7 @@ public class Main extends AbstractKindlet {
 	private Action VERIFY = new SolutionAction("Verify Solution") {
 		public void actionPerformed(ActionEvent e) {
 			if (currentlyPlaying != null) {
-				Thread t = new Thread() {
+				Thread t = new Thread("Krosswords.VerifySolution") {
 					public void run() {
 						currentlyPlaying.verify();
 
@@ -209,7 +232,7 @@ public class Main extends AbstractKindlet {
 	private Action FILL_RANDOM_LETTER = new SolutionAction("Help me!") {
 		public void actionPerformed(ActionEvent e) {
 			if (currentlyPlaying != null) {
-				Thread t = new Thread() {
+				Thread t = new Thread("Krosswords.FillRandom") {
 					public void run() {
 						currentlyPlaying.getPuzzle().fillRandomLetter();
 
@@ -227,7 +250,7 @@ public class Main extends AbstractKindlet {
 	private Action RESET = new AbstractAction("Reset Puzzle") {
 		public void actionPerformed(ActionEvent e) {
 			if (currentlyPlaying != null) {
-				Thread t = new Thread() {
+				Thread t = new Thread("Krosswords.Reset") {
 					public void run() {
 						int dlgOption = KOptionPane.showConfirmDialog(ctx.getRootContainer(), "Do you really want to reset the puzzle?", "Reset", KOptionPane.NO_YES_OPTIONS);
 						
