@@ -13,6 +13,11 @@ import littlelui.krosswords.model.Word;
 
 import com.mindprod.ledatastream.LEDataInputStream;
 
+/** PUZ Format parser, see http://code.google.com/p/puz/wiki/FileFormat for file format description
+ * 
+ * @author Lui
+ *
+ */
 public class PUZParser {
 	private static final String MAGIC = "ACROSS&DOWN";
 	
