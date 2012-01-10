@@ -24,6 +24,7 @@ public class DownloadManager implements ConnectivityHandler {
 	private final Map/*<String, Fetcher>*/ fetchers = new HashMap();
 	{
 		fetchers.put("derStandard.at", new DerStandardFetcher());
+		fetchers.put("think.com", new ThinksDotComFetcher());
 	}
 	
 	private final Connectivity connectivity;
@@ -110,12 +111,16 @@ public class DownloadManager implements ConnectivityHandler {
 			}
 
 		} catch (Throwable t) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			t.printStackTrace(pw);
-			ple.setAttribute("error", t.getMessage()+"\n"+sw.toString());
-			ple.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
+			setFailedDownloadError(ple, t);
 		}
+	}
+
+	public static void setFailedDownloadError(PuzzleListEntry ple, Throwable t) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);
+		ple.setAttribute("error", t.getMessage()+"\n"+sw.toString());
+		ple.setPuzzleDownloadState(PuzzleListEntry.DOWNLOAD_FAILED);
 	}
 	
 	private void fetchSingleSolutionAndUpdate(PuzzleListEntry ple) {

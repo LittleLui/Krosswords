@@ -188,7 +188,11 @@ public final class PuzzleListEntry implements Serializable, Comparable {
 	private synchronized void persist() {
 		Main m = Main.getInstance();
 		
-		File f = new File(m.getCatalogDir(), getFileName());
+		if (m == null)
+			return;
+		
+		File dir = m.getCatalogDir();
+		File f = new File(dir, getFileName());
 		ObjectOutputStream oos = null;
 		try {
 			FileOutputStream fos = new FileOutputStream(f);

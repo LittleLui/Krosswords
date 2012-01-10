@@ -7,12 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageProducer;
 import java.awt.image.PixelGrabber;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,7 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 //TODO: error handling, running feedback
 //TODO: close streams when done!
-public class DerStandardFetcher implements Fetcher {
+public class DerStandardFetcher extends AbstractWebFetcher implements Fetcher {
 	final static boolean DEBUG_IMAGE_PARSING = false;
 	
 	private final class PuzzleProducingContentHandler extends DefaultHandler {
@@ -245,8 +240,6 @@ public class DerStandardFetcher implements Fetcher {
 	
 	private static final String P_ID_FROM_HREF = "[A-Za-z\\-]+([0-9]+)";
 	private static final String P_HINT= "([0-9]+)([^_]+)___";
-	private static final String P_CHARSET_IN_TYPE = "[A-Za-z0-9\\-/]+;\\s*charset=([A-Za-z0-9\\-]+)";
-
 	private static final String P_HREF_PUZZLE = "/Kreuzwortraetsel-Nr-";
 	private static final String P_HREF_SOLUTION = "Loesung-Kreuzwortraetsel";
 
@@ -268,13 +261,7 @@ public class DerStandardFetcher implements Fetcher {
 		}
 		
 		
-		
-		InputSource is = null;
-		try {
-		  is = fetchViaHttp(URL_INDEX);
-		  Parser p = new Parser();
-		  
-		  p.setContentHandler(new DefaultHandler() {
+		boolean success = fetchViaHttp(URL_INDEX, new DefaultHandler() {
 			  //<a href="/1319184020935/Kreuzwortraetsel-Nr-6941?_lexikaGroup=1">Kreuzworträtsel Nr. 6941</a>
 			  //<a href="/1319184020416/Loesung-Kreuzwortraetsel-Nr-6940?_lexikaGroup=1">Lösung: Kreuzworträtsel Nr. 6940</a>
 
@@ -302,18 +289,9 @@ public class DerStandardFetcher implements Fetcher {
 			}
 
 		  });
-		  
-		  p.parse(is);
-		} catch (IOException ioe) {
-			Main.getInstance().logError("Unable to update list from derstandard.at", ioe);
-		} catch (SAXException se) {
-			Main.getInstance().logError("Unable to update list from derstandard.at", se);
-		} finally {
-			if (is != null) try {
-				is.getCharacterStream().close();
-			} catch (Exception e) {} //fair to ignore exceptions when closing
-		}
-		
+
+		if (!success)
+			return null;
 		
 		Set r = new HashSet(ples.values());
 		r.removeAll(known);
@@ -370,31 +348,6 @@ public class DerStandardFetcher implements Fetcher {
 		}
 	}
 
-	private InputSource fetchViaHttp(String url) throws IOException, MalformedURLException, UnsupportedEncodingException {
-		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-		
-		//so we don't neccessarily get the mobile version 
-		conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.0; rv:8.0) Gecko/20100101 Firefox/8.0");
-		conn.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-		
-
-		InputStream in = (InputStream) conn.getContent();
-		String encoding = conn.getContentEncoding();
-		String type = conn.getContentType();
-		
-		
-		if (encoding == null) {
-			RE re = new RE(P_CHARSET_IN_TYPE);
-			if (re.match(type)) {
-				encoding = re.getParen(1);
-			}
-		}
-		
-		Reader r = new InputStreamReader(in, encoding);
-		InputSource is = new InputSource(r);
-		return is;
-	}
-	
 	protected boolean[][] fetchPuzzleImage(String src) {
 		try {
 			  HttpURLConnection conn = (HttpURLConnection)new URL(src).openConnection();
