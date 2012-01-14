@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import littlelui.krosswords.Main;
+import littlelui.krosswords.Settings;
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.catalog.PuzzleSolution;
@@ -21,7 +22,7 @@ import com.amazon.kindle.kindlet.net.NetworkDisabledDetails;
 
 public class DownloadManager implements ConnectivityHandler {
 	//map from provider-name to fetcher.
-	private final Map/*<String, Fetcher>*/ fetchers = new HashMap();
+	public static final Map/*<String, Fetcher>*/ fetchers = new HashMap();
 	{
 		fetchers.put("derStandard.at", new DerStandardFetcher());
 		fetchers.put("think.com", new ThinksDotComFetcher());
@@ -34,25 +35,38 @@ public class DownloadManager implements ConnectivityHandler {
 	private Thread downloadThread;
 	
 	private DownloadRunnable downloadRunnable = new DownloadRunnable();
+	private Settings settings;
 
 
-	public DownloadManager(Connectivity connectivity, KindletContext ctx, Catalog catalog) {
+	public DownloadManager(Connectivity connectivity, KindletContext ctx, Catalog catalog, Settings settings) {
 		this.connectivity = connectivity;
 		this.ctx = ctx;
 		this.catalog = catalog;
+		this.settings = settings;
 	}
 	
 	public void start() {
-		if (connectivity.isConnected()) {
-			requestConnectionIfWorkToDo();
+		if (settings.isAutoDownload() && connectivity.isConnected()) {
+			requestConnectionIfWorkToDo(false);
 		}
 	}
 
-	private void requestConnectionIfWorkToDo() {
+	public void configure(Settings settings) {
+		this.settings = settings;
+		if (settings.isAutoDownload()) {
+			if (downloadRunnable == null) {
+				requestConnectionIfWorkToDo(false);
+			}
+		} else {
+			if (downloadRunnable != null) {
+				downloadRunnable.stop();
+			}
+			
+		}
+	}
+	
+	public void requestConnectionIfWorkToDo(boolean allowPrompting) {
 		//TODO: only if work to do
-		//TODO: only if no playable puzzles are here do we want to actively prompt the user
-		boolean allowPrompting = false;
-		
 		connectivity.submitSingleAttemptConnectivityRequest(this, allowPrompting);
 	}
 
@@ -79,12 +93,15 @@ public class DownloadManager implements ConnectivityHandler {
 	private void updateLists() {
 		Collection known = catalog.getEntries();
 		
-		Iterator fs = fetchers.values().iterator();
+		Iterator fs = fetchers.keySet().iterator();
 		while (fs.hasNext()) {
-			Fetcher f = (Fetcher)fs.next();
-			Collection addedOrChanged = f.fetchAvailablePuzzleIds(known);
-			
-			catalog.addAll(addedOrChanged);
+			String s = (String)fs.next();
+			if (settings.getEnabledFetchers().contains(s)) {
+				Fetcher f = (Fetcher)fetchers.get(s);
+				Collection addedOrChanged = f.fetchAvailablePuzzleIds(known);
+				
+				catalog.addAll(addedOrChanged);
+			}
 		}
 	}
 
@@ -172,11 +189,14 @@ public class DownloadManager implements ConnectivityHandler {
 
 				while(running && entries.hasNext()) {
 					PuzzleListEntry ple = (PuzzleListEntry)entries.next();
-					if (ple.getPuzzleDownloadState() != PuzzleListEntry.DOWNLOADED) {
-						fetchSinglePuzzleAndUpdate(ple);
-					}
-					if (ple.getSolutionDownloadState() != PuzzleListEntry.DOWNLOADED) {
-						fetchSingleSolutionAndUpdate(ple);
+					
+					if (settings.getEnabledFetchers().contains(ple.getProvider())) {
+						if (ple.getPuzzleDownloadState() != PuzzleListEntry.DOWNLOADED) {
+							fetchSinglePuzzleAndUpdate(ple);
+						}
+						if (ple.getSolutionDownloadState() != PuzzleListEntry.DOWNLOADED) {
+							fetchSingleSolutionAndUpdate(ple);
+						}
 					}
 				}
 			} catch (Exception t) {
@@ -193,7 +213,9 @@ public class DownloadManager implements ConnectivityHandler {
 			running = false;
 		}
 		
-	};
+	}
+
+
 
 }
 

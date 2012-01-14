@@ -42,22 +42,26 @@ public class Main extends AbstractKindlet {
         
         private Catalog catalog;
         private DownloadManager dm;
+        private Settings settings;
         
         private KMenu puzzleMenu = new KMenu();
         private KMenu catalogMenu = new KMenu();
+        private KMenu settingsMenu = new KMenu();
         
         public Main() {
 			super();
 			instance = this;
 			
+			puzzleMenu.add(new KMenuItem(NAVIGATE_TO_SETTINGS));
 			puzzleMenu.add(new KMenuItem(NAVIGATE_TO_CATALOG));
 			puzzleMenu.add(new KMenuItem(VERIFY));
 			puzzleMenu.add(new KMenuItem(FILL_RANDOM_LETTER));
 			puzzleMenu.add(new KMenuItem(RESET));
 			puzzleMenu.add(new KMenuItem(FINISH));
 
+			catalogMenu.add(new KMenuItem(NAVIGATE_TO_SETTINGS));
 			catalogMenu.add(new KMenuItem(NAVIGATE_TO_LAST_PUZZLE));
-
+			catalogMenu.add(new KMenuItem(START_DOWNLOADING));
         }
         
         public static Main getInstance() {
@@ -67,6 +71,8 @@ public class Main extends AbstractKindlet {
 		public void create(KindletContext context) {
                 this.ctx = context;
     			stateDir = ctx.getHomeDirectory();
+    			settings = Settings.load(stateDir);
+    			
     			catalogDir = new File(stateDir, "catalog");
     			
     			catalogDir.mkdirs();
@@ -74,7 +80,7 @@ public class Main extends AbstractKindlet {
     			catalog = new Catalog(catalogDir);
     			
     			try {
-    				dm = new DownloadManager(ctx.getConnectivity(), ctx, catalog);
+    				dm = new DownloadManager(ctx.getConnectivity(), ctx, catalog, settings);
     			} catch (Throwable t) {
     				t.printStackTrace();
     				System.out.println(t);
@@ -84,12 +90,16 @@ public class Main extends AbstractKindlet {
         }
 
 		public void start() {
-			PuzzleListEntry ple = getLastPuzzle();
-			
-			if (ple == null) {
-				navigateToCatalog();
-			} else {
-				navigateToPuzzle(ple);
+			if (settings.isNew())
+				navigateToSettings();
+			else { 
+				PuzzleListEntry ple = getLastPuzzle();
+				
+				if (ple == null) {
+					navigateToCatalog();
+				} else {
+					navigateToPuzzle(ple);
+				}
 			}
 			
 			dm.start();
@@ -115,6 +125,23 @@ public class Main extends AbstractKindlet {
 		// TODO: save panel's uri so we can re-open it when we open again
 	}		
 	
+	public void navigateToSettings() {
+		if (this.currentlyPlaying != null)
+			this.currentlyPlaying.setLastPlayed(new Date());
+		
+		this.currentlyPlaying = null;
+		
+		Container c = ctx.getRootContainer();
+		c.removeAll();
+		
+		c.add(new SettingsPanel(settings, dm));
+		
+		c.validate(); 
+		c.repaint();
+		
+		ctx.setMenu(settingsMenu);
+	}
+	
 	public void navigateToPuzzle(PuzzleListEntry ple) {
 		Puzzle puzzle = ple.getPuzzle();
 		
@@ -136,6 +163,8 @@ public class Main extends AbstractKindlet {
 	public void navigateToCatalog() {
 		if (this.currentlyPlaying != null)
 			this.currentlyPlaying.setLastPlayed(new Date());
+		
+		this.currentlyPlaying = null;
 		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
@@ -199,6 +228,21 @@ public class Main extends AbstractKindlet {
 		}
 	};
 	
+	private Action NAVIGATE_TO_SETTINGS = new AbstractAction("Settings...") {
+		public void actionPerformed(ActionEvent e) {
+			if (currentlyPlaying != null) {
+				currentlyPlaying.setLastPlayed(new Date());
+			}
+			
+			navigateToSettings();
+		}
+	};
+	
+	private Action START_DOWNLOADING = new AbstractAction("Download new Puzzles") {
+		public void actionPerformed(ActionEvent e) {
+			dm.requestConnectionIfWorkToDo(true);
+		}
+	};
 	private Action FINISH = new AbstractAction("Mark Puzzle Finished") {
 		public void actionPerformed(ActionEvent e) {
 			if (currentlyPlaying != null) {
