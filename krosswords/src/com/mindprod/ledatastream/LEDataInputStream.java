@@ -34,6 +34,8 @@ import java.io.InputStream;
  * @author Roedy Green, Canadian Mind Products
  * @version 1.8 2007-05-24
  * @since 1998
+ * 
+ * Licenese: public domain, see <http://mindprod.com/products1.html>: "All of the utilities posted here are free! and come with well-commented source. However, they all have a non-military use restriction. This amounts to public domain for non-military use."
  */
 public final class LEDataInputStream implements DataInput
     {

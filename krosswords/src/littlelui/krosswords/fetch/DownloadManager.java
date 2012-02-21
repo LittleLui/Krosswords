@@ -9,17 +9,39 @@ import java.util.Iterator;
 import java.util.Map;
 
 import littlelui.krosswords.Main;
-import littlelui.krosswords.Settings;
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.catalog.PuzzleSolution;
 import littlelui.krosswords.model.Puzzle;
+import littlelui.krosswords.model.Settings;
 
 import com.amazon.kindle.kindlet.KindletContext;
 import com.amazon.kindle.kindlet.net.Connectivity;
 import com.amazon.kindle.kindlet.net.ConnectivityHandler;
 import com.amazon.kindle.kindlet.net.NetworkDisabledDetails;
 
+/** Manages downloads from the internet. No shit! 
+ * 
+ * @author LittleLui
+ *
+ * Copyright 2011-2012 Wolfgang Groiss
+ * 
+ * This file is part of Krosswords.
+ * 
+ * Krosswords is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ **/
 public class DownloadManager implements ConnectivityHandler {
 	//map from provider-name to fetcher.
 	public static final Map/*<String, Fetcher>*/ fetchers = new HashMap();

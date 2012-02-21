@@ -14,6 +14,11 @@ import javax.swing.JPanel;
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.catalog.PuzzleListEntry.Listener;
 
+/** The view of a single puzzle in the catalog view.
+ *  
+ * @author LittleLui
+ *
+ */
 public class PuzzleListEntryPanel extends JPanel {
 	private PuzzleListEntry entry;
 

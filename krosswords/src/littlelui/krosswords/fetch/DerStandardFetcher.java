@@ -33,6 +33,30 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/** Fetcher for derStandard.at. 
+ * 
+ * As puzzles are only available as image+html, we have to do some image analysis and html parsing here.
+ * 
+ * @author LittleLui
+ *
+ * Copyright 2011-2012 Wolfgang Groiss
+ * 
+ * This file is part of Krosswords.
+ * 
+ * Krosswords is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ **/
 //TODO: error handling, running feedback
 //TODO: close streams when done!
 public class DerStandardFetcher extends AbstractWebFetcher implements Fetcher {

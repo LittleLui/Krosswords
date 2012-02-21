@@ -1,0 +1,31 @@
+== Copyright and License ==
+All files - except as noted below - Copyright 2011-2012 Wolfgang Groiss.
+
+Krosswords is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program in the file COPYING.  
+If not, see <http://www.gnu.org/licenses/>. 
+
+
+== Contact Info ==
+Contact me at <https://github.com/LittleLui>.
+This Program lives at <https://github.com/LittleLui/Krosswords>.
+
+== Additional Files required to build and run ==
+You need to add the files kafui.jar, Kindlet-2.0.jar, KindletBookletDRM-2.0.jar, KindletImplementation-2.0.jar, KindletSystemPlugins-2.0.jar and utilities.jar from your Kindle Touch to the lib/ directory. 
+
+== Other copyrights and licenses ==
+src/com/mindprod/ledatastream.LEDataInputStream - Public Domain, from <http://mindprod.com>.
+build/jsc-0.1.45.jar - BSD-style license, from <http://www.jcraft.com/jsch/>
+lib-distribute/jakarta-regexp-1.5.jar - BSD-style license, from <http://jakarta.apache.org/regexp/>
+lib-distribute/tagsoup-1.2.1.jar - Apache License 2.0, from <http://ccil.org/~cowan/XML/tagsoup>
+icons in resource/icons - Creative Commons Attribution Share Alike, from <http://blog.twg.ca/2010/11/retina-display-icon-set/>. Co-distribution is ok according to <http://lists.ibiblio.org/pipermail/cc-licenses/2007-July/005881.html>.
