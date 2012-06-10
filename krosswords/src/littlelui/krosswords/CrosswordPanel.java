@@ -18,6 +18,7 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 
 import littlelui.krosswords.model.Puzzle;
+import littlelui.krosswords.model.Settings;
 import littlelui.krosswords.model.Word;
 
 import com.amazon.kindle.kindlet.KindletContext;
@@ -58,14 +59,17 @@ public class CrosswordPanel extends JComponent {
 	private Editor editor;
 	
 	private int scale = 36;
-	private Font keyFont = new Font("SansSerif", Font.PLAIN, 11);
-	private Font solutionFont = new Font("SansSerif", Font.PLAIN, 22);
+	private final Font keyFont;
+	private final Font solutionFont;
 
 	private Dimension preferredSize;
 	
 
-	public CrosswordPanel(Puzzle model, KindletContext ctx) {
+	public CrosswordPanel(Puzzle model, KindletContext ctx, Settings settings) {
 		super();
+
+		keyFont = new Font("SansSerif", Font.PLAIN, settings.getCrosswordPanelKeyFontSize());
+		solutionFont = new Font("SansSerif", Font.PLAIN, settings.getCrosswordPanelSolutionFontSize());
 
 		this.model = model;
 		this.ctx = ctx;

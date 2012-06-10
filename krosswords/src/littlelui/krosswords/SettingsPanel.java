@@ -54,17 +54,18 @@ public class SettingsPanel extends JPanel {
 	
 	private Settings settings;
 	
-	private Font F_TITLE = new Font(Font.SANS_SERIF, Font.PLAIN, 48);
 	
 	public SettingsPanel(Settings se, final DownloadManager dm) {
 		super();
 		this.settings = se;
 
+		Font titleFont = new Font(Font.SANS_SERIF, Font.PLAIN, se.getSettingsPanelTitleFontSize());
+
 		setLayout(new BorderLayout(0, 15));
 //		setLayout(new GridLayout(0, 1));
 		
 		JLabel jlTitle = new JLabel("Krosswords Settings");
-		jlTitle.setFont(F_TITLE);
+		jlTitle.setFont(titleFont);
 		add(jlTitle, BorderLayout.NORTH);
 		
 		

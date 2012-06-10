@@ -6,12 +6,12 @@ import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 
 import littlelui.krosswords.catalog.Catalog;
 import littlelui.krosswords.catalog.CatalogListener;
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.model.Puzzle;
+import littlelui.krosswords.model.Settings;
 
 import com.amazon.kindle.kindlet.KindletContext;
 import com.amazon.kindle.kindlet.event.GestureDispatcher;
@@ -44,19 +44,21 @@ public class CatalogPanel extends KPages implements CatalogListener {
 	
 	private final Main main;
 	private final Catalog catalog;
+	private final Settings settings;
 
 	
-	public CatalogPanel(Main main, KindletContext ctx, final Catalog catalog) {
+	public CatalogPanel(Main main, Settings settings, KindletContext ctx, final Catalog catalog) {
         super(PageProviders.createBoxLayoutProvider(BoxLayout.Y_AXIS));
         this.main = main;
         this.catalog = catalog;
+        this.settings = settings;
         
         catalog.addListener(this);
 		
         Iterator i = catalog.getEntries().iterator();
         while (i.hasNext()) {
         	PuzzleListEntry ple = (PuzzleListEntry)i.next();
-        	final JComponent jc = createItemPanel(ple);
+        	final JComponent jc = createItemPanel(ple, settings);
            	addItem(jc); 
         }
 	}
@@ -64,8 +66,8 @@ public class CatalogPanel extends KPages implements CatalogListener {
 
 	
 
-	private JComponent createItemPanel(final PuzzleListEntry ple) {
-		PuzzleListEntryPanel plep = new PuzzleListEntryPanel(ple);
+	private JComponent createItemPanel(final PuzzleListEntry ple, Settings settings) {
+		PuzzleListEntryPanel plep = new PuzzleListEntryPanel(ple, settings);
 		plep.addMouseListener(new GestureDispatcher());
 		plep.getActionMap().put(Gestures.ACTION_TAP, new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
@@ -83,7 +85,7 @@ public class CatalogPanel extends KPages implements CatalogListener {
 
 
 	public void entryAdded(PuzzleListEntry entry, int index) {
-		JComponent jc = createItemPanel(entry);
+		JComponent jc = createItemPanel(entry, settings);
 		if (index >= getComponentCount())
 			addItem(jc);
 		else

@@ -104,5 +104,10 @@ public class KindletRunner implements KindletContext {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public Object getService(Class arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

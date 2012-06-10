@@ -33,7 +33,7 @@ import java.util.Set;
  *
  **/
 public class Settings implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private boolean autoDownload;
 	private Set/*<String>*/ enabledFetchers = new HashSet();
@@ -41,6 +41,28 @@ public class Settings implements Serializable {
 	private transient File settingsFile;
 	private transient boolean isNew = false;
 
+	
+	public int getCrosswordPanelKeyFontSize() {
+		return 5;
+	}
+	
+	public int getCrosswordPanelSolutionFontSize() {
+		return 11;
+	}
+	
+	public int getListPanelTitleFontSize() {
+		return 11;
+	}
+	
+	public int getListPanelSmallFontSize() {
+		return 9;
+	}
+	
+	public int getSettingsPanelTitleFontSize() {
+		return 24;
+	}
+
+	
 	public boolean isAutoDownload() {
 		return autoDownload;
 	}
@@ -57,8 +79,7 @@ public class Settings implements Serializable {
 		this.enabledFetchers = enabledFetchers;
 	}
 
-	
-	
+
 	public boolean isNew() {
 		return isNew;
 	}

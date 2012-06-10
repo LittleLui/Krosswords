@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 
 import littlelui.krosswords.catalog.PuzzleListEntry;
 import littlelui.krosswords.catalog.PuzzleListEntry.Listener;
+import littlelui.krosswords.model.Settings;
 
 /** The view of a single puzzle in the catalog view.
  *  
@@ -22,8 +23,7 @@ import littlelui.krosswords.catalog.PuzzleListEntry.Listener;
 public class PuzzleListEntryPanel extends JPanel {
 	private PuzzleListEntry entry;
 
-	private Font F_TITLE = new Font(Font.SANS_SERIF, Font.PLAIN, 22);
-	private Font F_SMALL = new Font(Font.SANS_SERIF, Font.PLAIN, 18);
+
 	
 	private static Icon loadIcon(String name) {
 		return new ImageIcon(PuzzleListEntryPanel.class.getResource("/icons/"+name+"_24.png"));
@@ -41,9 +41,12 @@ public class PuzzleListEntryPanel extends JPanel {
 	private static final Icon I_C_GOOD = loadIcon("comment_check");
 	private static final Icon I_C_BAD = loadIcon("comment_delete");
 
-	public PuzzleListEntryPanel(PuzzleListEntry entry) {
+	public PuzzleListEntryPanel(PuzzleListEntry entry, Settings settings) {
 		super();
 		this.entry = entry;
+		
+		Font titleFont = new Font(Font.SANS_SERIF, Font.PLAIN, settings.getListPanelTitleFontSize());
+		Font smallFont = new Font(Font.SANS_SERIF, Font.PLAIN, settings.getListPanelSmallFontSize());
 		
 		setLayout(new BorderLayout(8, 6));
 		setBorder(BorderFactory.createMatteBorder(1, 0, 1,0,Color.DARK_GRAY));
@@ -66,8 +69,8 @@ public class PuzzleListEntryPanel extends JPanel {
 			}
 		});
 		
-		lTitle.setFont(F_TITLE);
-		lOrigin.setFont(F_SMALL);
+		lTitle.setFont(titleFont);
+		lOrigin.setFont(smallFont);
 		
 		add(lTitle, BorderLayout.CENTER);
 		add(lOrigin, BorderLayout.EAST);

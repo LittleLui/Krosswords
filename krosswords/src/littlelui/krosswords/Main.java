@@ -174,7 +174,7 @@ public class Main extends AbstractKindlet {
 		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
-		c.add(new PuzzlePanel(puzzle, ctx));
+		c.add(new PuzzlePanel(puzzle, ctx, settings));
 		
 		c.validate(); 
 		c.repaint();
@@ -190,7 +190,7 @@ public class Main extends AbstractKindlet {
 		
 		Container c = ctx.getRootContainer();
 		c.removeAll();
-		c.add(new CatalogPanel(this, ctx, catalog));
+		c.add(new CatalogPanel(this, settings, ctx, catalog));
 
 		c.validate(); 
 		c.repaint();

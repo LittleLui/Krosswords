@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import javax.swing.JPanel;
 
 import littlelui.krosswords.model.Puzzle;
+import littlelui.krosswords.model.Settings;
 
 import com.amazon.kindle.kindlet.KindletContext;
 
@@ -33,12 +34,12 @@ import com.amazon.kindle.kindlet.KindletContext;
  *
  **/
 public class PuzzlePanel extends JPanel {
-	public PuzzlePanel(Puzzle model, KindletContext ctx) {
+	public PuzzlePanel(Puzzle model, KindletContext ctx, Settings settings) {
         setLayout(new BorderLayout());
         
         JPanel pTop = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
         add(pTop, BorderLayout.NORTH); 
-		CrosswordPanel cp = new CrosswordPanel(model, ctx);
+		CrosswordPanel cp = new CrosswordPanel(model, ctx, settings);
         pTop.add(cp);
 
         HintsPanel hp = new HintsPanel(model);
